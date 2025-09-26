@@ -22,8 +22,9 @@
       --grad-b: #00c5e5;
       --fg: #f5f7ff;
       --mut: rgba(245, 247, 255, .68);
-      --surface: rgba(15, 17, 32, .50);
-      --surface-strong: rgba(15, 17, 32, .88);
+      /* Superfícies levemente mais opacas para melhorar a legibilidade em fundos complexos */
+      --surface: rgba(15, 17, 32, .65);
+      --surface-strong: rgba(15, 17, 32, .92);
       --bd: 1px solid rgba(255, 255, 255, .12);
       --ok: #39ffb6;
       --warn: #ffb86b;
@@ -56,8 +57,9 @@
       --grad-b: #1f242d;
       --fg: #f1f2f5;
       --mut: rgba(241, 242, 245, .68);
-      --surface: rgba(44, 47, 56, .40);
-      --surface-strong: rgba(44, 47, 56, .75);
+      /* No tema médio, aumente a opacidade das superfícies para reforçar o efeito de vidro */
+      --surface: rgba(44, 47, 56, .55);
+      --surface-strong: rgba(44, 47, 56, .85);
       --bd: 1px solid rgba(255, 255, 255, .06);
       --ok: #68d391;
       --warn: #f6ad55;
@@ -127,13 +129,19 @@ body::after {
     .view { position: absolute; inset: 0; padding: 12px 14px; overflow: auto; display: none }
     .view.active {
       display: block;
-      /* Nova animação de transição para as views: combina fade-in com desfoque e leve zoom. */
-      animation: fadeBlur .6s var(--ease);
+      /* Animação de transição mais simples: apenas fade com leve zoom. */
+      animation: fadeSimple .6s var(--ease);
     }
-    @keyframes fadeBlur {
-      0%   { opacity: 0; filter: blur(16px); transform: scale(0.96); }
-      60%  { opacity: 0.8; filter: blur(6px);  transform: scale(1.02); }
-      100% { opacity: 1; filter: blur(0);     transform: scale(1); }
+    /* Esta animação remove o filtro de blur e utiliza apenas opacidade e escala
+       para uma transição mais suave. Você pode ajustar os valores para
+       personalizar o timing. */
+    @keyframes fadeSimple {
+      /* Para um efeito de zoom mais sutil, usamos valores de escala
+         mais próximos de 1. Altere estes valores caso deseje ajustar a
+         intensidade do zoom. */
+      0%   { opacity: 0; transform: scale(0.995); }
+      60%  { opacity: 0.8; transform: scale(1.005); }
+      100% { opacity: 1; transform: scale(1); }
     }
 
     /* ===== Cards / grids ===== */
@@ -257,7 +265,7 @@ body::after {
       /* Ícone favoritado mantém cor original (amarelo) */
       filter: none;
     }
-    .card { background: var(--surface); border: var(--bd); border-radius: var(--r2); box-shadow: var(--shadow); padding: 12px; display: flex; gap: 10px; align-items: center; position: relative }
+    .card { background: var(--surface); border: var(--bd); border-radius: var(--r2); box-shadow: var(--shadow); padding: 12px; display: flex; gap: 10px; align-items: center; position: relative; backdrop-filter: blur(8px) saturate(160%) }
     .card.fx-trans:hover { box-shadow: 0 16px 40px rgba(0,0,0,.5) }
     .ico { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; background: rgba(255,255,255,.06); border: var(--bd) }
     .mut { color: var(--mut); font-size: 12px }
@@ -285,14 +293,32 @@ body::after {
       display: flex;
       gap: 12px;
       align-items: center;
-      /* Use um fundo um pouco mais claro para destacar cada app e melhorar a legibilidade */
-      background: rgba(255, 255, 255, 0.06);
+      /* Use um fundo com maior opacidade e um leve blur para destacar cada app e melhorar a legibilidade */
+      background: var(--surface);
+      backdrop-filter: blur(8px) saturate(160%);
       border: var(--bd);
       border-radius: var(--r);
       padding: 14px;
     }
     .app-card:hover { box-shadow: 0 12px 34px rgba(0,0,0,.46) }
     .app-icon { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: #0f1528; border: var(--bd); overflow: hidden }
+
+    /* Ícone com a letra do app no cabeçalho das sessões. Utiliza a
+       primeira letra do título e cores do gradiente para destacar o
+       aplicativo em cada cartão. */
+    .session .hdr .app-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      margin-right: 6px;
+      background: var(--grad-a);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+    }
     .app-title {
       font-weight: 800;
       /* Evitar quebra de linhas em títulos longos e mostrar reticências */
@@ -341,7 +367,7 @@ body::after {
     .session .resize-handle:hover { background: rgba(255,255,255,.25); }
 
     /* ===== Dock + Tabs ===== */
-    .dock { position: fixed; left: 10px; right: 10px; bottom: calc(var(--tabsH) + 8px + env(safe-area-inset-bottom)); display: flex; gap: 8px; flex-wrap: wrap; z-index: 80 }
+    .dock { position: fixed; left: 10px; right: 10px; bottom: calc(var(--tabsH) + 8px + env(safe-area-inset-bottom)); display: none; gap: 8px; flex-wrap: wrap; z-index: 80 }
     .badge { display: inline-flex; gap: 6px; align-items: center; padding: .38rem .65rem; border: 1px solid #ffffff18; background: #0f1428; border-radius: 999px; font-weight: 800; position: relative }
     .badge.fx-trans:hover { box-shadow: 0 10px 24px rgba(0,0,0,.5) }
     nav.tabbar { position: fixed; left: 0; right: 0; bottom: env(safe-area-inset-bottom, 0); height: var(--tabsH); z-index: 1500; display: flex; justify-content: center; padding: 6px 14px }
@@ -391,7 +417,14 @@ body::after {
       width: 100%;
       height: 100%;
       border: 0;
-      background: transparent;
+      /*
+       * Defina um plano de fundo escuro para o iframe do arquétipo. Quando um
+       * PNG ou outro recurso não estiver disponível ou demora a carregar,
+       * alguns navegadores exibem uma cor de fundo branca padrão. Ao
+       * especificar explicitamente uma cor escura aqui, evitamos flashes
+       * de branco e mantemos a estética coesa durante as transições.
+       */
+      background: #0b0f14;
     }
 
     /* ===== Splash overlay ===== */
@@ -651,7 +684,11 @@ body::after {
     #arch-fadeCover {
       position: absolute;
       inset: 0;
-      background: var(--bg, #0b0f14);
+      /* Use a cor do arquétipo ativo, se definida, para o fade. Isso
+         torna a transição mais perceptível quando um novo arquétipo
+         é selecionado.  Caso não haja overlay, caia para a cor de
+         fundo padrão. */
+      background: var(--arch-overlay, var(--bg, #0b0f14));
       opacity: 0;
       pointer-events: none;
       transition: opacity .3s ease;
@@ -880,6 +917,12 @@ body::after {
     .stack-group summary::-webkit-details-marker { display: none; }
     .stack-group .group-content { padding: 8px 12px; }
     .stack-group .group-content .session { margin-top: 8px; }
+
+    /* Deixe espaço no fim do Stack para a barra de navegação.  Isso evita que
+       as sessões sobreponham os botões da nav inferior. */
+    #stackWrap {
+      padding-bottom: calc(var(--tabsH) + 16px);
+    }
 
     /* Tela cheia de uma sessão: ocupa toda a tela, esconde cabeçalho e tabs */
     .session.full { position: fixed !important; inset: 0; z-index: 1000; margin: 0; width: 100%; height: 100%; display: flex; flex-direction: column; }
@@ -1110,11 +1153,20 @@ body::after {
         <div class="card fx-trans fx-lift" style="display:block">
           <div style="font-weight:800; display:flex; align-items:center; gap:8px">
             Sessões
-            <button id="btnCloseAll" class="btn fx-trans fx-press ring" title="Fechar todas">Fechar todas<span class="ripple"></span></button>
+            <button id="btnCloseAll" class="btn fx-trans fx-press ring" title="Fechar todas">
+              <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/xmark.svg" alt="Fechar todas" width="16" height="16" onerror="this.onerror=null;this.src='icons/xmark.svg'" style="margin-right:4px">
+              Fechar todas<span class="ripple"></span>
+            </button>
             <!-- Botão para criar grupos de sessões -->
-            <button id="btnAddGroup" class="btn fx-trans fx-press ring" title="Novo grupo">Novo grupo<span class="ripple"></span></button>
+            <button id="btnAddGroup" class="btn fx-trans fx-press ring" title="Novo grupo">
+              <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/folder-plus.svg" alt="Novo grupo" width="16" height="16" onerror="this.onerror=null;this.src='icons/folder-plus.svg'" style="margin-right:4px">
+              Novo grupo<span class="ripple"></span>
+            </button>
             <!-- Botão para enviar um HTML local e abrir como sessão -->
-            <button id="btnStackUpload" class="btn fx-trans fx-press ring" title="Upload HTML">Upload HTML<span class="ripple"></span></button>
+            <button id="btnStackUpload" class="btn fx-trans fx-press ring" title="Upload HTML">
+              <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/file-upload.svg" alt="Upload HTML" width="16" height="16" onerror="this.onerror=null;this.src='icons/file-upload.svg'" style="margin-right:4px">
+              Upload HTML<span class="ripple"></span>
+            </button>
             <input id="stackUpload" type="file" accept=".html,text/html" style="display:none" />
           </div>
           <div class="mut">Reabra rápido pelo dock abaixo.</div>
@@ -1132,6 +1184,22 @@ body::after {
           <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
             <input id="userName" class="input ring" placeholder="Seu nome" />
             <button id="saveName" class="btn prime fx-trans fx-press ring">Salvar<span class="ripple"></span></button>
+          </div>
+        </div>
+        <!-- Configuração do assistente (Dual) -->
+        <div class="card fx-trans fx-lift" style="display:block">
+          <div style="font-weight:800">Assistente</div>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+            <input id="assistantName" class="input ring" placeholder="Nome do assistente" />
+            <button id="saveAssistant" class="btn prime fx-trans fx-press ring">Salvar<span class="ripple"></span></button>
+          </div>
+        </div>
+        <!-- Seleção da voz de boas-vindas -->
+        <div class="card fx-trans fx-lift" style="display:block">
+          <div style="font-weight:800">Voz do assistente</div>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap">
+            <select id="selectVoice" class="input ring" style="max-width:260px"></select>
+            <button id="saveVoice" class="btn fx-trans fx-press ring">Salvar<span class="ripple"></span></button>
           </div>
         </div>
         <div class="card fx-trans fx-lift" style="display:block">
@@ -1328,6 +1396,9 @@ body::after {
   </script>
 
   <script>
+  // Redefine the global toast function to suppress popup messages. If you
+  // later decide to re-enable notifications, remove or comment out this line.
+  window.toast = function(){};
     /* ===================== Helpers ===================== */
     const $ = (q, r = document) => r.querySelector(q);
     const $$ = (q, r = document) => Array.from(r.querySelectorAll(q));
@@ -2108,10 +2179,60 @@ body::after {
       $('#saveSK').onclick = () => { LS.set('dual.openrouter.model', sel.value); localStorage.setItem('dual.keys.openrouter', $('#sk').value || ''); toast('Configurações salvas', 'ok'); };
       $('#saveName').onclick = () => {
         localStorage.setItem('infodose:userName', ($('#userName').value || '').trim());
-        toast('Nome salvo', 'ok');
+        // Toque som especial ao salvar o nome do usuário (Tech Pop)
+        try { if (typeof window.playTechPopSound === 'function') window.playTechPopSound(); } catch {}
+        // Mensagens de toast foram desativadas globalmente
         try { displayGreeting(); } catch (e) {}
         try { updateHomeStatus(); } catch {}
       };
+
+      // Preencher campo de assistente com valor salvo
+      const assistantInput = document.getElementById('assistantName');
+      if (assistantInput) {
+        assistantInput.value = (localStorage.getItem('infodose:assistantName') || '').trim();
+      }
+      // Salvar nome do assistente
+      const btnAssistant = document.getElementById('saveAssistant');
+      if (btnAssistant) {
+        btnAssistant.onclick = () => {
+          const nameVal = (assistantInput.value || '').trim();
+          localStorage.setItem('infodose:assistantName', nameVal);
+          try { if (typeof window.playTechPopSound === 'function') window.playTechPopSound(); } catch {}
+        };
+      }
+
+      // Preencher lista de vozes para seleção global de fala
+      const voiceSel = document.getElementById('selectVoice');
+      function populateVoiceSel() {
+        if (!voiceSel) return;
+        voiceSel.innerHTML = '';
+        let voices = speechSynthesis.getVoices();
+        if (!voices || !voices.length) return;
+        // Filtrar por idiomas suportados (Português e Inglês) se disponível
+        const filtered = voices.filter(v => v.lang && (v.lang.toLowerCase().startsWith('pt') || v.lang.toLowerCase().startsWith('en')));
+        voices = filtered.length ? filtered : voices;
+        const savedVoice = localStorage.getItem('infodose:speechVoice') || '';
+        voices.forEach(v => {
+          const opt = document.createElement('option');
+          opt.value = v.name;
+          opt.textContent = v.name + ' (' + v.lang + ')';
+          if (savedVoice && savedVoice === v.name) opt.selected = true;
+          voiceSel.appendChild(opt);
+        });
+      }
+      if (voiceSel) {
+        // Populate now and when voices change
+        populateVoiceSel();
+        speechSynthesis.onvoiceschanged = populateVoiceSel;
+      }
+      const btnVoice = document.getElementById('saveVoice');
+      if (btnVoice && voiceSel) {
+        btnVoice.onclick = () => {
+          const val = voiceSel.value;
+          localStorage.setItem('infodose:speechVoice', val || '');
+          try { if (typeof window.playTechPopSound === 'function') window.playTechPopSound(); } catch {}
+        };
+      }
 
       // Permitir adicionar modelo personalizado
       const addBtn = $('#addModel');
@@ -2344,8 +2465,8 @@ body::after {
       // Truncar o título para exibir apenas as três primeiras palavras; adicionar reticências quando houver mais.
       const fullTitle = String(a.title || a.key || '').trim();
       const words = fullTitle.split(/\s+/);
-      const truncated = words.slice(0, 3).join(' ');
-      const displayTitle = words.length > 3 ? truncated + '…' : truncated;
+      const truncated = words.slice(0, 2).join(' ');
+      const displayTitle = words.length > 2 ? truncated + '…' : truncated;
       const t = document.createElement('div');
       t.className = 'app-title';
       t.textContent = displayTitle || fullTitle;
@@ -2383,12 +2504,46 @@ body::after {
         const dir = mode === 'za' ? -1 : 1;
         return dir * String(a.title || '').localeCompare(b.title || '');
       });
-      appsWrap.innerHTML = '';
+      // Organize os apps por grupo (arquetipo).  Considera-se o nome
+      // após o ponto "·" no título como o nome do grupo.  Se não houver,
+      // coloca em "Outros".
+      const grouped = {};
       L.forEach(a => {
-        const card = cardApp(a);
-        appsWrap.appendChild(card);
+        let gName = '';
+        if (a.title && a.title.includes('·')) {
+          const parts = a.title.split('·');
+          gName = (parts[1] || '').trim();
+        }
+        if (!gName) gName = 'Outros';
+        if (!grouped[gName]) grouped[gName] = [];
+        grouped[gName].push(a);
       });
-      appsCount.textContent = L.length + ' apps';
+      // Limpar o container
+      appsWrap.innerHTML = '';
+      // Ordenar grupos alfabeticamente para exibir em ordem consistente
+      const groupNames = Object.keys(grouped).sort((a,b) => a.localeCompare(b));
+      let total = 0;
+      groupNames.forEach(gName => {
+        const container = document.createElement('div');
+        container.className = 'apps-group';
+        const header = document.createElement('h3');
+        header.textContent = gName;
+        header.style.margin = '16px 4px 8px';
+        header.style.fontSize = '15px';
+        header.style.fontWeight = '800';
+        header.style.color = 'var(--mut)';
+        const grid = document.createElement('div');
+        grid.className = 'grid';
+        grouped[gName].forEach(app => {
+          const card = cardApp(app);
+          grid.appendChild(card);
+          total++;
+        });
+        container.appendChild(header);
+        container.appendChild(grid);
+        appsWrap.appendChild(container);
+      });
+      appsCount.textContent = total + ' apps';
       // Reaplicar ícones após adicionar novos cards (garante que as estrelas e ícones de apps carreguem)
       try { applyIcons(); } catch {}
       // Notifique o Revo de que os apps mudaram, se estiver ativo
@@ -2403,6 +2558,10 @@ body::after {
         RAW.apps = Array.isArray(raw.apps) ? raw.apps : (Array.isArray(raw) ? raw : []);
       } catch { RAW.apps = [] }
       renderApps();
+      // Após renderizar os apps, crie grupos padrão no Stack para cada
+      // arquetipo, se ainda não existirem.  Isso permite que as sessões
+      // abertas sejam automaticamente organizadas por grupo.
+      try { ensureDefaultGroups(); } catch (e) { console.warn('Falha ao criar grupos padrão', e); }
       // Sempre envie o catálogo atualizado ao iframe do Revo após carregar os apps embutidos.
       try {
         const iframe = document.getElementById('revoEmbed');
@@ -2492,11 +2651,19 @@ body::after {
       card.dataset.sid = sid;
       // Armazene metadados de título/url no dataset.meta para persistência
       card.dataset.meta = JSON.stringify({ title: a.title || 'App', url: a.url || '' });
+      // Se nenhum grupo foi fornecido, tente atribuir com base no nome após o ponto no título (ex.: "Atlas · Cartesius").
+      if (!a.gid && a.title && a.title.includes('·')) {
+        const parts = a.title.split('·');
+        const gName = (parts[1] || '').trim();
+        if (gName) {
+          a.gid = 'g_' + gName.toLowerCase().replace(/\s+/g, '_');
+        }
+      }
       // Se um grupo específico foi fornecido, salve no dataset.gid para persistência
       if (a.gid) card.dataset.gid = a.gid;
       card.innerHTML = `
         <div class="hdr">
-          <div class="title">${(a.title || 'App')}</div>
+          <div class="title"><span class="app-icon">${((a.title || 'App')[0] || 'A')}</span>${(a.title || 'App')}</div>
           <div class="tools">
             <button class="btn ring fx-trans fx-press" data-act="min" title="Minimizar">
               <span style="font-size:16px;line-height:1">&minus;</span>
@@ -2557,7 +2724,9 @@ body::after {
         anchor.prepend(card);
       } else {
         // Se houver um grupo selecionado, adicione a sessão dentro desse grupo; caso contrário, insira no stackWrap
-        const gid = window.currentGroupId;
+        // Escolha o grupo de destino: se houver um grupo selecionado manualmente
+        // use-o; caso contrário, utilize o grupo inferido do título (a.gid).
+        const gid = window.currentGroupId || a.gid;
         let placed = false;
         if (gid) {
           const grp = stackWrap && stackWrap.querySelector('.stack-group[data-group-id="' + gid + '"] .group-content');
@@ -2590,6 +2759,8 @@ body::after {
         updateDock();
         saveStackState();
         dualLog('Sessão fechada: ' + (a.title || 'App'));
+        // Toque som de fechamento de sessão
+        try { playCloseSound(); } catch {}
       };
       // Botão tela cheia
       const fullBtn = card.querySelector('[data-act=full]');
@@ -2615,13 +2786,13 @@ body::after {
             card.classList.remove('pinned');
             pinBtn.querySelector('.pin-icon').textContent = '☆';
             removePinnedByMeta(meta);
-            toast('App desafixado', 'warn');
+            // Não exiba toast ao desafixar
           } else {
             // Fixar
             card.classList.add('pinned');
             pinBtn.querySelector('.pin-icon').textContent = '★';
             addPinned(meta);
-            toast('App fixado na barra', 'ok');
+            // Não exiba toast ao fixar
           }
         };
       }
@@ -2636,7 +2807,7 @@ body::after {
             delete card.dataset.gid;
             stackWrap.prepend(card);
             saveStackState();
-            toast('Sessão movida para a raiz', 'ok');
+            // Não exiba toast ao mover para a raiz
             return;
           }
           const names = groups.map(g => g.querySelector('summary')?.textContent || '').filter(n => n);
@@ -2652,7 +2823,7 @@ body::after {
               card.dataset.gid = targetGroup.getAttribute('data-group-id') || '';
               updateDock();
               saveStackState();
-              toast('Sessão movida para "' + (names[idx-1]) + '"', 'ok');
+              // Não exiba toast ao mover para um grupo específico
               return;
             }
           }
@@ -2661,7 +2832,7 @@ body::after {
           stackWrap.prepend(card);
           updateDock();
           saveStackState();
-          toast('Sessão movida para a raiz', 'ok');
+          // Não exiba toast ao mover para a raiz
         };
       }
       // Não navegue automaticamente para a view Stack na versão estendida.
@@ -2669,8 +2840,10 @@ body::after {
       updateDock();
       // Após abrir uma sessão, persista o estado (grupos, sessões e fixados)
       saveStackState();
-      toast('App aberto: ' + (a.title || 'App'), 'ok');
+      // Não exiba toast ao abrir uma nova sessão
       dualLog('Sessão aberta: ' + (a.title || 'App'));
+      // Toque som de abertura de app, se definido
+      try { playOpenSound(); } catch {}
     }
     $('#btnCloseAll').onclick = () => {
       if (!confirm('Fechar todas as sessões abertas?')) return;
@@ -2888,6 +3061,72 @@ body::after {
   </div>
 </div>
 <script>
+// === Fala por voz usando Web Speech API ===
+// Estas funções utilizam a API de síntese de fala do navegador para
+// pronunciar mensagens. A voz padrão é configurada para o português do Brasil.
+// Fala uma mensagem opcionalmente selecionando uma voz preferida.
+function pickVoice(pref) {
+  try {
+    const voices = speechSynthesis.getVoices();
+    if (!voices || !voices.length) return null;
+    // Se houver uma preferência, tente encontrá-la pelo nome
+    if (pref) {
+      const found = voices.find(v => v.name && v.name.toLowerCase().includes(pref.toLowerCase()));
+      if (found) return found;
+    }
+    // Caso contrário, escolha uma voz em português ou a primeira disponível
+    const ptVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('pt'));
+    return ptVoice || voices[0];
+  } catch (err) {
+    return null;
+  }
+}
+function speakMsg(msg, voicePref) {
+  try {
+    const utter = new SpeechSynthesisUtterance(msg);
+    utter.lang = 'pt-BR';
+    const voice = pickVoice(voicePref);
+    if (voice) utter.voice = voice;
+    speechSynthesis.speak(utter);
+  } catch (e) {
+    console.warn('Speech synthesis not supported', e);
+  }
+}
+function speakSplash() {
+  // Recupera o nome do usuário salvo no localStorage para personalizar a mensagem
+  const name = (localStorage.getItem('infodose:userName') || '').trim();
+  // Se houver nome de usuário, use-o; caso contrário utilize "Dual" como padrão
+  const msg = name ? `${name}, pulso ativo.` : 'Oi Dual, pulso ativo.';
+  // Use a voz selecionada pelo usuário no Brain, ou "Joana" como fallback
+  const prefVoice = (localStorage.getItem('infodose:speechVoice') || '').trim() || 'Joana';
+  speakMsg(msg, prefVoice);
+}
+function speakHomeGreeting() {
+  // Esta função pode ser chamada manualmente para saudar o usuário na home.
+  // Não é chamada automaticamente para evitar saudações inesperadas.
+  const assistant = (localStorage.getItem('dual.assistantName') || localStorage.getItem('infodose:assistantName') || 'Dual').trim();
+  // Determine arquétipo selecionado a partir do select (remove .html)
+  let archName = '';
+  const sel = document.getElementById('arch-select');
+  if (sel && sel.options.length > 0) {
+    const opt = sel.options[sel.selectedIndex];
+    if (opt) archName = opt.textContent.replace(/\.html$/i, '');
+  }
+  let msg = '';
+  // Determine o nome de saudação ou utilize "Dual" como padrão
+  const userName = (localStorage.getItem('infodose:userName') || '').trim();
+  const greet = userName || 'Dual';
+  if (assistant && archName) {
+    msg = `Oi ${greet}, eu sou ${assistant}. Ativo o impulso com o arquétipo ${archName}.`;
+  } else if (assistant) {
+    msg = `Oi ${greet}, eu sou ${assistant}.`;
+  } else {
+    msg = `Oi ${greet}, ative seu impulso configurando um arquétipo.`;
+  }
+  // Use a voz salva pelo usuário ou o nome do arquétipo; se ambos vazios, use Joana
+  const prefVoice = (localStorage.getItem('infodose:speechVoice') || '').trim();
+  speakMsg(msg, archName || prefVoice || 'Joana');
+}
 // ===== LS Control (isolated; safe append) =====
 (function(){
   function toast(msg, type){ try{ window.toast(msg, type || 'ok') }catch{ console.log(msg) } }
@@ -3184,6 +3423,14 @@ window.addEventListener('load', () => {
       });
     } catch (err) {}
   }
+  // Fale durante o splash usando a síntese de voz
+  try {
+    if (typeof speakSplash === 'function') speakSplash();
+  } catch {}
+  // Em seguida, faça a saudação completa alguns instantes depois do splash
+  try {
+    if (typeof speakHomeGreeting === 'function') setTimeout(() => speakHomeGreeting(), 400);
+  } catch {}
   // Aguarde um breve instante após o carregamento para garantir que o loader seja exibido.
   // Aumente este valor (ms) para manter o splash por mais tempo. Aqui usamos 1200ms (1.2s).
   setTimeout(() => {
@@ -3250,6 +3497,39 @@ window.addEventListener('load', () => {
     // Salve apps fixados (o array já está armazenado em unoPinnedApps via add/remove)
   }
   window.saveStackState = saveStackState;
+
+  /**
+   * Garante que existam grupos de stack correspondentes a cada categoria de apps
+   * (arquetipos).  Obtém os nomes de grupo da variável RAW.apps e cria
+   * grupos com IDs fixos baseados no nome.  Se um grupo já existir, não o
+   * duplica.  Use para organizar sessões automaticamente por arquetipo.
+   */
+  function ensureDefaultGroups() {
+    try {
+      const stackWrapEl = document.getElementById('stackWrap');
+      if (!stackWrapEl) return;
+      // Obtenha lista de nomes de grupos a partir dos apps embutidos
+      const names = {};
+      (RAW.apps || []).forEach(a => {
+        if (a && a.title && a.title.includes('·')) {
+          const parts = a.title.split('·');
+          const gName = (parts[1] || '').trim();
+          if (gName) names[gName] = true;
+        }
+      });
+      // Para cada nome, crie grupo se não existir
+      Object.keys(names).forEach(name => {
+        const gid = 'g_' + name.toLowerCase().replace(/\s+/g, '_');
+        if (!document.querySelector('#stackWrap .stack-group[data-group-id="' + gid + '"]')) {
+          createStackGroup(gid, name);
+        }
+      });
+    } catch (e) {
+      console.warn('Falha ao garantir grupos padrão', e);
+    }
+  }
+  // Exponha função globalmente para poder chamar de outros lugares
+  window.ensureDefaultGroups = ensureDefaultGroups;
 
   /**
    * Restaura grupos e sessões do LocalStorage.
@@ -3356,6 +3636,684 @@ window.addEventListener('load', () => {
     }
   });
 })();
+</script>
+  <!-- Sons da interface.  Coloque os arquivos em sounds/ui/*.wav conforme distribuídos no pacote UNO_UISounds_Pack_v1. -->
+  <!-- Use o som Back Action como clique principal -->
+  <audio id="sndClick"  src="sounds/ui/back-action.wav" preload="auto"></audio>
+  <audio id="sndHover"  src="sounds/ui/hover.wav" preload="auto"></audio>
+  <audio id="sndOpen"   src="sounds/ui/open.wav" preload="auto"></audio>
+  <audio id="sndClose"  src="sounds/ui/close.wav" preload="auto"></audio>
+  <audio id="sndTab"    src="sounds/ui/tab.wav" preload="auto"></audio>
+  <audio id="sndNav"    src="sounds/ui/nav.wav" preload="auto"></audio>
+  <audio id="sndBack"   src="sounds/ui/back.wav" preload="auto"></audio>
+  <audio id="sndDrag"   src="sounds/ui/drag.wav" preload="auto"></audio>
+  <audio id="sndSuccess" src="sounds/ui/success.wav" preload="auto"></audio>
+  <audio id="sndWarn"    src="sounds/ui/warn.wav" preload="auto"></audio>
+  <audio id="sndError"   src="sounds/ui/error.wav" preload="auto"></audio>
+  <!-- Som Tech Pop usado para ações especiais (ex: salvar nome) -->
+  <audio id="sndTechPop" src="sounds/ui/tech-pop.wav" preload="auto"></audio>
+  <script>
+  // Associe sons aos principais elementos de interface.  Cada botão com a
+  // classe .btn toca o som de clique; os itens de navegação tocam som de
+  // tab ou nav; a abertura/fechamento de sessões dispara sons específicos.
+  (function(){
+    const getAudio = id => document.getElementById(id);
+    const play = (id) => {
+      const audio = getAudio(id);
+      if (audio) {
+        try { audio.currentTime = 0; audio.play(); } catch {}
+      }
+    };
+    // Clique em qualquer botão
+    document.body.addEventListener('click', (e) => {
+      const btn = e.target.closest('.btn');
+      if (btn) play('sndClick');
+      // Navegação inferior (tabs)
+      const navBtn = e.target.closest('nav .btn');
+      if (navBtn) play('sndTab');
+    });
+    // Hover (mouseenter) em botões
+    document.body.addEventListener('mouseenter', (e) => {
+      const btn = e.target.closest('.btn');
+      if (btn) play('sndHover');
+    }, true);
+    // Sobrescreva open/close de sessões para tocar sons
+    window.playOpenSound = () => play('sndOpen');
+    window.playCloseSound = () => play('sndClose');
+    // Exponha também som especial Tech Pop
+    window.playTechPopSound = () => play('sndTechPop');
+  })();
+  </script>
+
+<style id="chatplus-styles">
+
+/* ===== ChatPlus (emoji buttons, 3-block replies, HTML rendering) ===== */
+#chatFeed .msg.ai-rich {
+  background: rgba(57,255,182,0.12);
+  border-radius: 16px 16px 16px 0;
+  padding: 8px 12px;
+  max-width: 75%;
+}
+#chatFeed .ai-block {
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  margin: 6px 0;
+  overflow: hidden;
+  background: rgba(15, 17, 32, 0.5);
+}
+#chatFeed .ai-block > summary {
+  list-style: none;
+  cursor: pointer;
+  font-weight: 800;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#chatFeed .ai-block > summary::-webkit-details-marker { display: none; }
+#chatFeed .ai-block .block-body {
+  padding: 8px 10px;
+  line-height: 1.55;
+}
+#chatFeed .ai-block .block-body :where(p, ul, ol, pre, code, h1, h2, h3, h4, h5, h6) { margin: 6px 0 }
+#chatFeed .ai-block .block-body pre {
+  background: rgba(0,0,0,.35);
+  padding: 8px;
+  border-radius: 8px;
+  overflow:auto;
+}
+/* Emoji buttons */
+.emoji-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin: 0 2px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.06);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  transition: transform .12s var(--ease), background .2s var(--ease);
+}
+.emoji-btn:hover { transform: translateY(-1px); background: rgba(255,255,255,0.1); }
+.emoji-suggestions {
+  margin-top: 6px;
+  display: flex; flex-wrap: wrap; gap: 4px;
+}
+/* Rendered HTML box (safe) */
+.render-html {
+  border: 1px dashed rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.03);
+  padding: 8px;
+  border-radius: 10px;
+}
+.render-html iframe {
+  width: 100%; border: 0; background: #0b0f14; border-radius: 8px;
+}
+
+</style>
+<script>
+// ===================== ChatPlus — v2 (2025-09-26) =====================
+// Adds: emoji buttons, 3-block expandable answers, safe HTML rendering,
+// autosave + compaction, voice cues, and SMART emoji suggestions based on Block 1.
+
+(function(){
+  const $ = (q, r=document)=>r.querySelector(q);
+  const $$ = (q, r=document)=>Array.from(r.querySelectorAll(q));
+  const LS = {
+    get: (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d } catch { return d } },
+    set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)) } catch {} },
+    raw:(k)=>localStorage.getItem(k)||''
+  };
+
+  // ---------- 1) Safe HTML sanitizer ----------
+  function sanitizeHTML(input){
+    try{
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(String(input||''), 'text/html');
+      const disallowed = ['script','style','link','iframe','object','embed','meta'];
+      disallowed.forEach(tag => doc.querySelectorAll(tag).forEach(n=>n.remove()));
+      // Remove on* attributes and style; harden URLs
+      const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_ELEMENT);
+      const allowedProtocols = ['http:', 'https:', 'data:'];
+      while (walker.nextNode()) {
+        const el = walker.currentNode;
+        // Remove event handlers and style
+        [...el.attributes].forEach(a => {
+          if (/^on/i.test(a.name) || a.name === 'style') el.removeAttribute(a.name);
+        });
+        if (el.tagName === 'A') {
+          el.setAttribute('target', '_blank');
+          el.setAttribute('rel', 'noopener noreferrer');
+          const href = el.getAttribute('href') || '';
+          try {
+            const u = new URL(href, location.href);
+            if (!allowedProtocols.includes(u.protocol)) el.removeAttribute('href');
+          } catch { el.removeAttribute('href'); }
+        }
+        if (el.tagName === 'IMG') {
+          const src = el.getAttribute('src') || '';
+          if (!/^https?:|^data:image\//i.test(src)) {
+            el.removeAttribute('src');
+          } else if (src.startsWith('data:') && src.length > 200000) {
+            el.setAttribute('src', '');
+          }
+          el.setAttribute('loading','lazy');
+          el.setAttribute('decoding','async');
+          el.style.maxWidth = '100%';
+          el.style.height = 'auto';
+          el.style.borderRadius = '8px';
+        }
+      }
+      return doc.body.innerHTML;
+    }catch(e){
+      return String(input||'').replace(/[<>]/g, c => c === '<' ? '&lt;' : '&gt;');
+    }
+  }
+
+  // ---------- 2) Emoji wrapper & quick-reply ----------
+  const emojiRegex = /([\p{Extended_Pictographic}\u2600-\u27BF](?:\uFE0F|\u200D[\p{Extended_Pictographic}\u2600-\u27BF])*)/gu;
+
+  // Intent map (used both for model instruction & button tooltips)
+  const EMOJI_INTENTS = {
+    "✨": "expandir",
+    "🔎": "detalhar",
+    "❓": "pergunta",
+    "🧪": "exemplo",
+    "🗓️": "agendar",
+    "✅": "checklist",
+    "🚀": "próxima ação",
+    "👍": "confirmar",
+    "💡": "nova ideia",
+    "📌": "resumo",
+    "💻": "código",
+    "🎨": "design",
+    "🔧": "resolver bug",
+    "📈": "métrica",
+    "💰": "custo/orçamento",
+    "🎵": "música",
+    "🎬": "vídeo",
+    "🎧": "áudio",
+    "🖼️": "imagem",
+    "➡️": "continuar"
+  };
+
+  function removeAccents(str){
+    try { return str.normalize('NFD').replace(/\p{Diacritic}+/gu,''); } catch { return str; }
+  }
+
+  function suggestEmojisFromText(text){
+    const t0 = (text || '').trim();
+    const t  = removeAccents(t0.toLowerCase());
+    const push = (arr, e, score) => { arr.push({ e, s: score }); };
+    const hits = [];
+
+    // Baseline
+    push(hits, "✨", 0.6);
+    push(hits, "👍", 0.4);
+    // Question / doubt
+    if (/[?¿？！]/.test(t0) || /duvida|dúvida|como|por que|pq/.test(t)) push(hits, "❓", 0.9);
+
+    // Action / step-by-step / checklist
+    if (/passo|checklist|etapa|tarefa|lista|todo|to-do|tarefas|1\)|2\)|3\)/.test(t)) push(hits, "✅", 1.0);
+
+    // Details / explore
+    if (/detalh|explica|por dentro|under the hood|aprofund|profund/i.test(t0)) push(hits, "🔎", 0.9);
+
+    // Next / continue / more
+    if (/proximo|pr[oó]ximo|continua|mais|avancar|seguinte|expandir/.test(t)) push(hits, "➡️", 0.75);
+
+    // Time / schedule
+    if (/amanha|amanhã|hoje|depois|semana|mes|m[eê]s|agenda|agendar|calend|horario|hora|prazo|deadline|cronogram/.test(t)) push(hits, "🗓️", 0.95);
+    if (/agendar|marcar|lembrete|reminder/.test(t)) push(hits, "⏰", 0.8);
+
+    // Money / metrics
+    if (/orcamento|orçamento|preco|pre[cç]o|custo|custos|grana|reais|rs |r\$|dinheiro|lucro|roi|kpi|metr[íi]c|indicador/.test(t)) push(hits, "💰", 1.0);
+    if (/crescimento|crescer|melhorar|otimizar|resultado|taxa|conversao|conversão|perform|grafico|gr[aá]fico|chart|dados|analise|an[aá]lise/.test(t)) push(hits, "📈", 0.9);
+
+    // Code / dev / bug
+    if (/codigo|c[oó]digo|api|sdk|dev|desenvolv|script|frontend|backend|node|react|vite|html|css|js|bug|erro|stack|deploy|publicar|build|ci|cd/.test(t)) push(hits, "💻", 1.0);
+    if (/bug|erro|falhou|nao funciona|não funciona|stack|trace|fixar|corrigir|ajustar|patch/.test(t)) push(hits, "🔧", 0.9);
+
+    // Design / figma / ui-ux
+    if (/design|ui|ux|figma|wireframe|mock|prototip|interface|estilo|paleta|tipografia|icones|icons/.test(t)) push(hits, "🎨", 0.95);
+
+    // Media
+    if (/video|vídeo|filme|gravar|render|frame|fps|yt|youtube/.test(t)) push(hits, "🎬", 0.9);
+    if (/audio|áudio|voz|microfone|falar|ouvir|sound|som|trilha|mix|volume/.test(t)) push(hits, "🎧", 0.9);
+    if (/musica|m[úu]sica|bpm|harmonia|melodia|beat|sint|sintetizador|pista/.test(t)) push(hits, "🎵", 0.9);
+    if (/imagem|img|foto|icon|ilustrac|ilustração|svg|png|jpg/.test(t)) push(hits, "🖼️", 0.9);
+
+    // Examples / cases
+    if (/exemplo|case|amostra|modelo|template|caso|demo/.test(t)) push(hits, "🧪", 0.9);
+
+    // Ideas
+    if (/ideia|idéia|brainstorm|inspira|inspiração|inspiracao|sugest/.test(t)) push(hits, "💡", 0.9);
+
+    // Next action / go
+    if (/vamos|bora|partiu|lan[cç]ar|decolar|iniciar|come[cç]ar|start|pr[oó]xima ac[aã]o/.test(t)) push(hits, "🚀", 1.0);
+
+    // Summary / pin
+    if (/resumo|sum[aá]rio|sintese|síntese|compilar/.test(t)) push(hits, "📌", 0.8);
+
+    // Aggregate best score per emoji
+    const map = new Map();
+    hits.forEach(({e,s}) => map.set(e, Math.max(map.get(e)||0, s)));
+    // Fallback if text tiny
+    if (t.length < 12) {
+      ["✨","❓","🔎","➡️","✅","🚀"].forEach(x => map.set(x, Math.max(map.get(x)||0, 0.5)));
+    }
+    const ranked = Array.from(map.entries()).sort((a,b) => b[1] - a[1]).map(x => x[0]);
+    const top = ranked.slice(0,8);
+    // Ensure must-haves
+    ["✨","❓"].forEach(e => { if (!top.includes(e)) top.push(e); });
+    return top.slice(0,8);
+  }
+
+  function wrapEmojisInEl(root){
+    if (!root) return;
+    // Walk text nodes and replace emojis with buttons
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const toReplace = [];
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      if (!node.nodeValue) continue;
+      if (emojiRegex.test(node.nodeValue)) {
+        toReplace.push(node);
+      }
+      emojiRegex.lastIndex = 0;
+    }
+    toReplace.forEach(node => {
+      const frag = document.createDocumentFragment();
+      const parts = node.nodeValue.split(emojiRegex);
+      parts.forEach(part => {
+        if (!part) return;
+        if (emojiRegex.test(part)) {
+          const btn = document.createElement('button');
+          btn.className = 'emoji-btn';
+          btn.textContent = part;
+          btn.setAttribute('data-emoji', part);
+          // tooltip/intent label when known
+          if (EMOJI_INTENTS[part]) { btn.title = EMOJI_INTENTS[part]; btn.setAttribute('aria-label', EMOJI_INTENTS[part]); }
+          frag.appendChild(btn);
+          emojiRegex.lastIndex = 0;
+        } else {
+          frag.appendChild(document.createTextNode(part));
+        }
+      });
+      node.parentNode.replaceChild(frag, node);
+    });
+  }
+
+  // Delegation: clicking an emoji sends it as a new message
+  const chatFeed = document.getElementById('chatFeed');
+  if (chatFeed) {
+    chatFeed.addEventListener('click', (e) => {
+      const btn = e.target.closest('.emoji-btn');
+      if (!btn) return;
+      const emoji = btn.getAttribute('data-emoji') || btn.textContent || '';
+      if (emoji) {
+        if (typeof window.sendUserMessage === 'function') {
+          window.sendUserMessage(emoji);
+        }
+      }
+    });
+  }
+
+  // ---------- 3) Chat store + compaction ----------
+  const ChatStore = {
+    key: 'uno:chat:v2',
+    memKey: 'uno:chat:mem',
+    maxPairs: 12,
+    maxChars: 100000,
+    load(){ return LS.get(this.key, []); },
+    save(list){ LS.set(this.key, list||[]); },
+    memory(){ return LS.get(this.memKey, ''); },
+    setMemory(text){ LS.set(this.memKey, String(text||'')); },
+    append(role, content){
+      const list = this.load();
+      list.push({ role, content: String(content||''), ts: Date.now() });
+      this.save(list);
+      this.compact();
+    },
+    clear(){ LS.set(this.key, []); LS.set(this.memKey, ''); },
+    compact(){
+      try {
+        let list = this.load();
+        const textLen = list.map(x => x.content||'').join('\\n').length;
+        if (list.length > 120 || textLen > this.maxChars) {
+          const keep = list.filter(m => m.role === 'user' || m.role === 'assistant');
+          const cutoffIndex = Math.max(0, keep.length - (this.maxPairs*2));
+          const older = keep.slice(0, cutoffIndex);
+          const newer = keep.slice(cutoffIndex);
+          const summary = this.naiveSummarize(older);
+          this.setMemory(summary);
+          const rebuilt = [];
+          if (summary) rebuilt.push({ role: 'system', content: 'Contexto resumido: ' + summary, ts: Date.now() });
+          newer.forEach(m => rebuilt.push(m));
+          this.save(rebuilt);
+        }
+      } catch (e) {}
+    },
+    naiveSummarize(msgs){
+      if (!Array.isArray(msgs) || !msgs.length) return '';
+      const lines = [];
+      let count = 0;
+      for (const m of msgs) {
+        const role = m.role === 'assistant' ? 'IA' : (m.role === 'user' ? 'Você' : m.role);
+        const t = String(m.content||'').replace(/\\s+/g,' ').trim();
+        if (!t) continue;
+        const first = t.split(/[.!?]/)[0];
+        if (first) {
+          lines.push('• ' + role + ': ' + first.slice(0, 160));
+          count += first.length;
+        }
+        if (count > 1200) break;
+      }
+      return lines.join('\\n');
+    },
+    buildMessages(userContent){
+      const sys = {
+        role: 'system',
+        content: [
+          'Você é um assistente em português.',
+          'Estruture SEMPRE a resposta em 3 blocos, com estes títulos exatos:',
+          '### Recompensa Inicial',
+          '### Curiosidade & Expansão',
+          '### Antecipação Vibracional',
+          'Cada bloco pode conter HTML simples seguro (sem scripts).',
+          'IMPORTANTE: Se o usuário enviar apenas um emoji, interprete-o como intenção:',
+          '✨ expandir · 🔎 detalhar · ❓ esclarecer dúvidas · 🧪 dar exemplos · 🗓️ sugerir agenda · ✅ checklist acionável · 🚀 próxima ação · 👍 confirmar · 💡 novas ideias · 📌 resumo · 💻 código · 🎨 design · 🔧 corrigir bug · 📈 métricas · 💰 custos.',
+          'Responda mantendo os 3 blocos.'
+        ].join(' ')
+      };
+      const memory = this.memory();
+      const memMsg = memory ? { role: 'system', content: 'Contexto resumido (memória):\\n' + memory } : null;
+      const prev = this.load().filter(m => m.role === 'user' || m.role === 'assistant');
+      const sliceStart = Math.max(0, prev.length - (this.maxPairs*2));
+      const context = prev.slice(sliceStart);
+      const msgs = [sys];
+      if (memMsg) msgs.push(memMsg);
+      context.forEach(m => msgs.push({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content }));
+      msgs.push({ role: 'user', content: userContent });
+      return msgs;
+    }
+  };
+  window.ChatStore = ChatStore;
+
+  // ---------- 4) Render expandable 3-block reply with optional HTML ----------
+  function extractHTMLFromFences(text){
+    const m = /```html\\s*([\\s\\S]*?)\\s*```/i.exec(text||'');
+    return m ? m[1] : null;
+  }
+  function splitIntoBlocks(raw){
+    const t = String(raw||'');
+    const re1 = /###\\s*Recompensa\\s*Inicial[\\s\\S]*?(?=###\\s*Curiosidade\\s*&\\s*Expans[aã]o|$)/i;
+    const re2 = /###\\s*Curiosidade\\s*&\\s*Expans[aã]o[\\s\\S]*?(?=###\\s*Antecip[aã]o\\s*Vibracional|$)/i;
+    const re3 = /###\\s*Antecip[aã]o\\s*Vibracional[\\s\\S]*/i;
+    const b1 = (t.match(re1)||[''])[0].replace(/###.*?\\n?/,'').trim();
+    const b2 = (t.match(re2)||[''])[0].replace(/###.*?\\n?/,'').trim();
+    const b3 = (t.match(re3)||[''])[0].replace(/###.*?\\n?/,'').trim();
+    if (b1 || b2 || b3) return { reward:b1, curious:b2, vibe:b3 };
+    const parts = t.split(/\\n\\n+/);
+    const n = parts.length;
+    const reward = parts.slice(0, Math.max(1, Math.ceil(n*0.3))).join('\\n\\n');
+    const curious = parts.slice(Math.max(1, Math.ceil(n*0.3)), Math.max(2, Math.ceil(n*0.7))).join('\\n\\n');
+    const vibe = parts.slice(Math.max(2, Math.ceil(n*0.7))).join('\\n\\n');
+    return { reward, curious, vibe };
+  }
+  function paraToHTML(s){
+    const esc = s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return esc.split(/\\n{2,}/).map(p => '<p>'+p.replace(/\\n/g,'<br>')+'</p>').join('');
+  }
+  function createBlockEl(title, content){
+    const details = document.createElement('details');
+    details.className = 'ai-block';
+    const summary = document.createElement('summary');
+    summary.innerHTML = title;
+    const body = document.createElement('div');
+    body.className = 'block-body';
+    const fenced = extractHTMLFromFences(content||'');
+    if (fenced) {
+      const safe = sanitizeHTML(fenced);
+      body.innerHTML = '<div class="render-html">'+ safe +'</div>';
+    } else if (/<[a-z][\\s\\S]*>/i.test(content||'')) {
+      body.innerHTML = '<div class="render-html">'+ sanitizeHTML(content) +'</div>';
+    } else {
+      body.innerHTML = paraToHTML(content||'');
+    }
+    details.appendChild(summary);
+    details.appendChild(body);
+    return details;
+  }
+  function renderAssistantReply(raw){
+    const feed = document.getElementById('chatFeed');
+    if (!feed) return;
+    const { reward, curious, vibe } = splitIntoBlocks(raw||'');
+    const wrap = document.createElement('div');
+    wrap.className = 'msg ai ai-rich';
+    const b1 = createBlockEl('1) <strong>Recompensa Inicial</strong> ⚡', reward||'');
+    const b2 = createBlockEl('2) <strong>Curiosidade &amp; Expansão</strong> 🔎', curious||'');
+    const b3 = createBlockEl('3) <strong>Antecipação Vibracional</strong> ✨', vibe||'');
+    b1.open = true;
+    wrap.appendChild(b1);
+    wrap.appendChild(b2);
+    wrap.appendChild(b3);
+    // SMART suggestions based on Block 1 content
+    const ems = suggestEmojisFromText(reward || '');
+    const uniq = Array.from(new Set(ems)).slice(0,8);
+    if (uniq.length) {
+      const sug = document.createElement('div');
+      sug.className = 'emoji-suggestions';
+      uniq.forEach(e => {
+        const btn = document.createElement('button');
+        btn.className = 'emoji-btn';
+        btn.textContent = e;
+        btn.setAttribute('data-emoji', e);
+        if (EMOJI_INTENTS[e]) { btn.title = EMOJI_INTENTS[e]; btn.setAttribute('aria-label', EMOJI_INTENTS[e]); }
+        sug.appendChild(btn);
+      });
+      wrap.appendChild(sug);
+    }
+    feed.appendChild(wrap);
+    wrapEmojisInEl(wrap);
+    feed.scrollTop = feed.scrollHeight;
+    try {
+      const txt = (reward||'').replace(/<[^>]*>/g,'').replace(/```[\\s\\S]*?```/g,'').trim();
+      if (typeof updatePreview === 'function') updatePreview(txt || (raw||'').slice(0,180));
+      if (typeof speakWithActiveArch === 'function' && txt) speakWithActiveArch(txt);
+    } catch{}
+    try { if (!window.__RESTORING_CHAT) ChatStore.append('assistant', raw||''); } catch{}
+  }
+  window.renderAssistantReply = renderAssistantReply;
+
+  // ---------- 5) Unified sendUserMessage ----------
+  async function sendUserMessage(msg){
+    const text = String(msg||'').trim();
+    if (!text) return;
+    if (typeof feedPush === 'function') feedPush('user', 'Você: ' + text);
+    try {
+      if (typeof showArchMessage === 'function') showArchMessage('Pulso enviado. Recebendo intenção…', 'ok');
+      if (typeof speakWithActiveArch === 'function') {
+        speakWithActiveArch('Pulso enviado');
+        setTimeout(()=>speakWithActiveArch('Recebendo intenção'), 380);
+      }
+    } catch{}
+    if (typeof feedPush === 'function') feedPush('status', '⚡ Pulso enviado · recebendo intenção…');
+    try { ChatStore.append('user', text); } catch{}
+    const userName = (localStorage.getItem('dual.name') || localStorage.getItem('infodose:userName') || '').trim();
+    const sk = (localStorage.getItem('dual.keys.openrouter') || localStorage.getItem('infodose:sk') || '').trim();
+    let model = (window.LS && LS.get && LS.get('dual.openrouter.model')) || (localStorage.getItem('infodose:model') || '').trim() || 'openrouter/auto';
+    try {
+      const reply = await sendAIMessageCtx({ userContent: text, sk, model });
+      if (reply) {
+        renderAssistantReply(reply);
+      }
+    } catch (err) {
+      console.error(err);
+      if (typeof feedPush === 'function') feedPush('status', '❌ Erro ao obter resposta.');
+    }
+  }
+  window.sendUserMessage = sendUserMessage;
+
+  // ---------- 6) Overrides / extensions ----------
+  if (typeof startSpeechConversation === 'function') {
+    window._startSpeechConversationOrig = startSpeechConversation;
+  }
+  window.startSpeechConversation = function(userName, sk, model){
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      try { showArchMessage('Reconhecimento de fala não suportado neste navegador.', 'err'); } catch {}
+      try { feedPush('status', '❌ Reconhecimento de fala não suportado.'); } catch {}
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'pt-BR';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onstart = () => {
+      try { showArchMessage('Estou ouvindo…', 'ok'); } catch {}
+      try { feedPush('status', '🎙️ Ouvindo…'); } catch {}
+    };
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript.trim();
+      if (transcript) sendUserMessage(transcript);
+    };
+    recognition.onerror = (e) => {
+      console.error('Erro no reconhecimento de fala:', e);
+      try { showArchMessage('Erro no reconhecimento de fala.', 'err'); } catch {}
+      try { feedPush('status', '❌ Erro no reconhecimento de fala.'); } catch {}
+    };
+    recognition.start();
+  };
+
+  if (typeof sendAIMessage === 'function') window._sendAIMessageOrig = sendAIMessage;
+  async function sendAIMessageCtx({ userContent, sk, model }){
+    const url = 'https://openrouter.ai/api/v1/chat/completions';
+    const messages = ChatStore.buildMessages(userContent);
+    const payload = {
+      model: model,
+      messages: messages,
+      max_tokens: 600,
+      temperature: 0.7
+    };
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${sk}`
+      },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error('Erro na API: ' + res.status);
+    const data = await res.json();
+    const reply = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+    return reply || '';
+  }
+  window.sendAIMessageCtx = sendAIMessageCtx;
+  window.sendAIMessage = async function(content, sk, model){
+    return sendAIMessageCtx({ userContent: content, sk, model });
+  };
+
+  if (typeof openApp === 'function') {
+    const _openApp = openApp;
+    window.openApp = function(a){
+      try {
+        if (typeof speakWithActiveArch === 'function') speakWithActiveArch('Abrindo ' + (a && (a.title||'app')));
+      } catch{}
+      return _openApp(a);
+    }
+  }
+
+  if (typeof cardApp === 'function') {
+    const _cardApp = cardApp;
+    window.cardApp = function(a){
+      const el = _cardApp(a);
+      try {
+        const fullTitle = String(a.title || a.key || '').trim();
+        const words = fullTitle.split(/\\s+/);
+        const two = words.slice(0,2).join(' ');
+        const display = words.length > 2 ? two + '…' : two;
+        const tEl = el.querySelector('.app-title');
+        if (tEl) { tEl.textContent = display || fullTitle; tEl.title = fullTitle; }
+      } catch{}
+      return el;
+    }
+  }
+
+  const _feedPush = (typeof feedPush === 'function') ? feedPush : null;
+  window.feedPush = function(type, text){
+    if (_feedPush) _feedPush(type, text);
+    try {
+      if (type === 'user') {
+        const t = String(text||'').replace(/^Você:\\s*/i,'');
+        ChatStore.append('user', t);
+      } else if (type === 'ai') {
+        const t = String(text||'').replace(/^[^:]+:\\s*/i,'');
+        ChatStore.append('assistant', t);
+      }
+    } catch {}
+  };
+  if (typeof chatPush === 'function') {
+    const _chatPush = chatPush;
+    window.chatPush = function(type, text){
+      _chatPush(type, text);
+      try {
+        if (type === 'user') {
+          const t = String(text||'').replace(/^Você:\\s*/i,'');
+          ChatStore.append('user', t);
+        } else if (type === 'ai') {
+          const t = String(text||'').replace(/^[^:]+:\\s*/i,'');
+          ChatStore.append('assistant', t);
+        }
+      } catch {}
+    }
+  }
+
+  // ---------- 7) Restore chat on load ----------
+  document.addEventListener('DOMContentLoaded', () => {
+    try {
+      window.__RESTORING_CHAT = true;
+      const list = ChatStore.load();
+      if (!list || !list.length) return;
+      const feed = document.getElementById('chatFeed');
+      if (!feed) return;
+      list.forEach(m => {
+        if (m.role === 'assistant') {
+          window.renderAssistantReply(m.content);
+        } else if (m.role === 'user') {
+          const div = document.createElement('div');
+          div.className = 'msg user';
+          div.textContent = 'Você: ' + (m.content||'');
+          feed.appendChild(div);
+        }
+      });
+      feed.scrollTop = feed.scrollHeight;
+      window.__RESTORING_CHAT = false;
+    } catch (e) { console.warn('Restore chat failed', e); window.__RESTORING_CHAT = false; }
+  });
+
+  // ---------- 8) Intercept home input form submit ----------
+  document.addEventListener('DOMContentLoaded', () => {
+    const hiForm = document.getElementById('homeInputForm');
+    const hiInput = document.getElementById('homeInput');
+    if (hiForm && hiInput) {
+      hiForm.addEventListener('submit', (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        ev.stopImmediatePropagation();
+        const msg = (hiInput.value || '').trim();
+        if (msg) window.sendUserMessage(msg);
+        hiInput.value = '';
+        return false;
+      }, true);
+    }
+  });
+
+})(); // end ChatPlus
 </script>
 </body>
 </html>
