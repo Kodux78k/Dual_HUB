@@ -1,16 +1,9 @@
 <!doctype html>
 <html lang="pt-BR" style="--arch-overlay: rgba(64, 158, 255, 0.22);"><head>
   <meta charset="utf-8">
-  <!-- Manifest PWA -->
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0b0f14" />
-
-<!-- iOS Safe Area -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
   <title>HUB UNO — PROD (safe)</title>
-
+  <meta name="theme-color" content="#0b0f14">
   <style>
     :root {
       /* Paleta padrão (rosa/azul) */
@@ -81,7 +74,7 @@
 /* Overlay de cor do arquétipo ativo.  Usa a variável --arch-overlay definida no
    :root e atualizada via script.  O overlay cobre toda a tela, tem pointer-events
    desativado e fica atrás dos demais elementos (z-index: 0). */
-body::after{content:'';position:fixed;inset:0;background:var(--arch-overlay);pointer-events:none;}
+body::after{content:'';position:fixed;inset:0;background:none !important;pointer-events:none;}
 
     /* ===== Micro-interações base ===== */
     .fx-trans { transition: transform .16s var(--ease), background .25s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease), opacity .25s var(--ease) }
@@ -413,7 +406,7 @@ body::after{content:'';position:fixed;inset:0;background:var(--arch-overlay);poi
        * de branco e mantemos a estética coesa durante as transições.
        */
       background: #0b0f14;
-     display: none !important; }
+    }
 
     /* ===== Splash overlay ===== */
     /* O elemento #appSplash cobre toda a tela enquanto o app carrega.
@@ -920,6 +913,65 @@ body::after{content:'';position:fixed;inset:0;background:var(--arch-overlay);poi
     body.session-full .tabs-wrap,
     body.session-full .fab { display: none !important; }
 
+
+
+/* === ORB + Particles (escopado dentro do círculo de arquétipos) === */
+.arch-circle .orb-wrap{
+  pointer-events:auto;
+  position:absolute;
+  inset: 6%;
+  width: 88%;
+  height: 88%;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  filter: drop-shadow(0 24px 48px rgba(0,0,0,.45));
+  z-index: 5; /* acima do iframe, abaixo de overlays de UI */
+}
+.arch-circle canvas#orb, .arch-circle canvas#particles{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  display:block;
+  pointer-events:none; /* não bloquear cliques do hub */
+}
+.arch-circle .orb-glow{
+  position:absolute;
+  inset:-8%;
+  border-radius:50%;
+  pointer-events:none;
+  background:radial-gradient(60% 60% at 50% 50%, rgba(122,60,255,.18), rgba(0,229,255,.14) 45%, rgba(0,0,0,0) 70%);
+  filter:blur(16px);
+  opacity:.92;
+  transition:opacity .6s ease, transform .6s ease;
+}
+.arch-circle .orb-wrap.activated .orb-glow{ transform:scale(1.05); }
+.arch-circle .ring{
+  position:absolute;
+  inset:-8%;
+  border-radius:50%;
+  pointer-events:none;
+  background: radial-gradient(80% 80% at 50% 50%, rgba(255,255,255,.10), rgba(255,255,255,0) 42%);
+}
+.arch-circle .call{
+  position:absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(234,242,255,.78);
+  font-size: 11px;
+  letter-spacing: .3px;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: .85;
+  text-shadow: 0 1px 0 rgba(0,0,0,.5);
+}
+@media (min-width:768px){
+  .arch-circle .call{ font-size:12px; }
+}
 </style>
 <style id="blue1Theme">
 /* === Blue‑1 Theme (UI) === */
@@ -1178,11 +1230,19 @@ body[data-theme="blue1"] #chatFeed .msg.ai { background: rgba(77, 148, 255, 0.14
 body[data-theme="blue1"] #chatFeed .msg.user { background: rgba(232,240,255,0.10); }
 
 </style>
-<link rel="stylesheet" href="blue-1.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<style id="overlay-defaults">
+:root{
+  --arch-color: #8a2be2;
+  --arch-overlay-strength: 12%; /* −1 default */
+  --arch-overlay: color-mix(in srgb, var(--arch-color) var(--arch-overlay-strength), transparent);
+}
+body::after{content:'';position:fixed;inset:0;background:var(--arch-overlay, transparent)!important;pointer-events:none;z-index:0}
+#arch-fadeCover{background:var(--arch-overlay, transparent);z-index:2}
+</style>
+
 
 <style id="ls-panel-css">
-/* === DualHub • Painel de LocalStorage (namespaced) === */
 #lsModal.ls-modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:1200;background:rgba(0,0,0,.55);backdrop-filter:blur(8px)}
 #lsModal.ls-modal.open{display:flex}
 #lsModal .ls-panel{width:min(1040px,95vw);max-height:86vh;overflow:auto;background:rgba(15,17,32,.92);border:1px solid rgba(255,255,255,.12);border-radius:18px;box-shadow:0 12px 34px rgba(0,0,0,.4);padding:14px;color:#f5f7ff;font:14px/1.45 Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial}
@@ -1209,7 +1269,6 @@ body[data-theme="blue1"] #chatFeed .msg.user { background: rgba(232,240,255,0.10
 #lsModal .img-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
 #lsModal .img-card{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);border-radius:10px;padding:8px}
 #lsModal .img-card img{width:100%;height:auto;display:block;border-radius:8px}
-/* Carteira SK */
 #lsModal .sk-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media (max-width:720px){#lsModal .sk-grid{grid-template-columns:1fr}#lsModal .key{max-width:46vw}}
 #lsModal .sk-item{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px;display:grid;gap:8px}
@@ -1219,6 +1278,81 @@ body[data-theme="blue1"] #chatFeed .msg.user { background: rgba(232,240,255,0.10
 #lsModal .sk-item button{font-size:.75rem;padding:4px 8px;border-radius:8px}
 #lsModal .sk-item button:first-child{background:rgba(57,255,182,.18)}
 #lsModal .sk-item button:last-child{background:rgba(255,92,138,.18)}
+/* inside LS overlay ctl */
+#lsModal .seg{display:inline-grid;grid-auto-flow:column;gap:6px}
+#lsModal .ls-ov{min-width:40px;padding:6px 8px;border-radius:10px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font-weight:700}
+#lsModal .ls-ov.on{background:rgba(57,255,182,.20);border-color:rgba(57,255,182,.45)}
+</style>
+
+
+<style id="show-app-title-css">.app-title{display:inline-flex;align-items:center;gap:6px}</style>
+
+<!-- PATCH: overlay-css-unify -->
+<style id="overlay-css-unify">
+/* Ensure overlay rendering is unified across variants */
+body::after{
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: var(--arch-overlay, transparent) !important;
+  pointer-events: none;
+  z-index: 0;
+}
+</style>
+<!-- PATCH: overlay-guardian-css -->
+<style id="overlay-guardian-css">
+html[data-overlay="off"] body::after{ background: transparent !important; }
+html[data-overlay="off"] #arch-fadeCover{ background: transparent !important; }
+</style>
+
+<style id="orb-slot-css">
+/* === ORB Slot (iframe "dentro" do orbe) === */
+.arch-circle { position: relative; }
+#orbWrap { position: relative; }
+#orbWrap canvas#orb,
+#orbWrap .orb-glow,
+#orbWrap .ring,
+#orbWrap canvas#particles { position: absolute; inset: 0; }
+
+/* Z-order for sandwiching */
+#orbWrap canvas#orb { z-index: 1; }
+#orbWrap .orb-glow { z-index: 2; }
+#orbWrap .orb-slot   { z-index: 3; } /* iframe masked */
+#orbWrap canvas#particles { z-index: 4; }
+#orbWrap .ring { z-index: 5; }
+/* HUB overlays keep above */
+#arch-fadeCover, #audioRipple { z-index: 6; }
+
+/* Masked slot inside the orb */
+.orb-slot{
+  position:absolute;
+  inset: 8%;              /* adjust 6–10% to taste */
+  border-radius: 50%;
+  overflow: hidden;
+  -webkit-clip-path: circle(50% at 50% 50%);
+          clip-path: circle(50% at 50% 50%);
+  mix-blend-mode: screen;
+  opacity: .92;
+  filter: saturate(1.06) contrast(1.04);
+  will-change: transform, opacity, filter;
+  pointer-events: auto;   /* allow interaction inside the archetype app */
+}
+.orb-slot iframe#arch-frame{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  border:0; background:#0b0f14; /* avoid white flash */
+  transform: translateZ(0);
+}
+/* Tint with archetype overlay color */
+.orb-slot::after{
+  content:"";
+  position:absolute; inset:0;
+  background: var(--arch-overlay, transparent);
+  pointer-events:none;
+  mix-blend-mode: overlay;
+  opacity:.35;
+  transition: opacity .25s ease;
+}
 </style>
 
 </head>
@@ -1231,7 +1365,7 @@ body[data-theme="blue1"] #chatFeed .msg.user { background: rgba(232,240,255,0.10
   <!-- ===== Header ===== -->
   <header class="mast">
     <button class="ib fx-trans fx-press ring" id="btnBack" title="Voltar" aria-label="Voltar">
-    <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/arrow-left.svg" alt="Voltar" width="20" height="20" onerror="this.onerror=null;this.src='icons/arrow-left.svg'">
+    <img src="icons/arrow-left.svg" alt="Voltar" width="20" height="20" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/arrow-left.svg'">
       <span class="ripple"></span>
     </button>
     <div class="title">
@@ -1239,7 +1373,7 @@ body[data-theme="blue1"] #chatFeed .msg.user { background: rgba(232,240,255,0.10
       <small>Dual · Trinity</small>
     </div>
     <button class="ib fx-trans fx-press ring" id="btnDownload" title="Baixar HTML">
-<img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/download.svg" alt="Download" width="20" height="20" onerror="this.onerror=null;this.src='icons/download.svg'">
+<img src="icons/download.svg" alt="Download" width="20" height="20" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/download.svg'">
       <span class="ripple"></span>
     </button>
     <button class="ib fx-trans fx-press ring" id="btnHelp" title="Ajuda / Atalhos">
@@ -1247,7 +1381,7 @@ body[data-theme="blue1"] #chatFeed .msg.user { background: rgba(232,240,255,0.10
       <span class="ripple"></span>
     </button>
     <button class="ib fx-trans fx-press ring" id="btnBrain" title="Brain">
-<img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/brain.svg" alt="Brain" width="20" height="20" onerror="this.onerror=null;this.src='icons/brain.svg'">
+<img src="icons/brain.svg" alt="Brain" width="20" height="20" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/brain.svg'">
       <span class="ripple"></span>
     </button>
   <button class="ib fx-trans fx-press ring" id="btnLS" title="Local Storage" aria-label="Local Storage">
@@ -1283,7 +1417,7 @@ body[data-theme="blue1"] #chatFeed .msg.user { background: rgba(232,240,255,0.10
               <div class="mut">Monólito: Apps embutidos + Viewer + Dock + Atalhos</div>
             </div>
             <div class="ico">
-<img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/bolt.svg" alt="Energia" width="24" height="24" onerror="this.onerror=null;this.src='icons/bolt.svg'">
+<img src="icons/bolt.svg" alt="Energia" width="24" height="24" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/bolt.svg'">
             </div>
           </div>
         </div>
@@ -1293,53 +1427,61 @@ body[data-theme="blue1"] #chatFeed .msg.user { background: rgba(232,240,255,0.10
                da bolinha e seguirá o layout vertical da arch-container. -->
           <div class="arch-switcher">
             <button class="btn fx-trans fx-press ring" id="arch-prev" title="Anterior">
-              <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/chevron-left.svg" alt="Anterior" width="16" height="16" onerror="this.onerror=null;this.src='icons/chevron-left.svg'">
+              <img src="icons/chevron-left.svg" alt="Anterior" width="16" height="16" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/chevron-left.svg'">
             <span class="ripple"></span></button>
             <select id="arch-select" title="Escolher arquétipo"><option value="atlas.html">atlas.html</option><option value="nova.html">nova.html</option><option value="vitalis.html">vitalis.html</option><option value="pulse.html">pulse.html</option><option value="artemis.html">artemis.html</option><option value="serena.html">serena.html</option><option value="kaos.html">kaos.html</option><option value="genus.html">genus.html</option><option value="lumine.html">lumine.html</option><option value="rhea.html">rhea.html</option><option value="solus.html">solus.html</option><option value="aion.html">aion.html</option></select>
             <button class="btn fx-trans fx-press ring" id="arch-next" title="Próximo">
-              <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/chevron-right.svg" alt="Próximo" width="16" height="16" onerror="this.onerror=null;this.src='icons/chevron-right.svg'">
+              <img src="icons/chevron-right.svg" alt="Próximo" width="16" height="16" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/chevron-right.svg'">
             <span class="ripple"></span></button>
           </div>
-          <div class="arch-circle" id="arch-circle">
-            <div id="three-canvas"></div>
+          <div class="arch-circle">
             <div id="arch-fadeCover"></div>
             <!-- Camada de ripple auditivo fica sobre o conteúdo do círculo -->
             <div id="audioRipple" class="audio-ripple"></div>
-            <iframe id="arch-frame" title="Archetype Core" sandbox="allow-scripts" referrerpolicy="no-referrer" src="./archetypes/atlas.html" src="archetypes/center.html?preset=blue1"></iframe>
+            <!-- ORB Nebula (WebGL + Partículas) — integrado no HUB -->
+            <div class="orb-wrap" id="orbWrap" aria-label="Orbe Nebula">
+              <canvas id="orb"></canvas>
+              <div class="orb-glow" id="orbGlow"></div>
+              <canvas id="particles"></canvas>
+              <div class="ring"></div>
+              <div class="call" id="orbCall">Toque para pulsar · Nebula</div>
+            </div>
+
+            <iframe id="arch-frame" title="Archetype Core" sandbox="allow-scripts" referrerpolicy="no-referrer" src="./archetypes/atlas.html"></iframe>
           </div>
           <!-- Mensagem de feedback aparece fora da bolinha, logo abaixo dela -->
           <div id="archMsg" class="arch-msg show" style="background: rgba(57, 255, 182, 0.75); color: rgb(11, 15, 20);">Bem-vindo de volta, KODUX. UNO está ao seu lado.</div>
           <!-- Menu de arquétipos: permite acessar Apps, Stack, Usuário, Revo e Home -->
           <div id="archMenu" class="arch-menu">
             <button data-nav="apps">
-              <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/folder-open.svg" alt="Apps" width="20" height="20" onerror="this.onerror=null;this.src='icons/folder-open.svg'">
+              <img src="icons/folder-open.svg" alt="Apps" width="20" height="20" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/folder-open.svg'">
               <span>Apps</span>
             <span class="ripple"></span></button>
             <button data-nav="stack">
-              <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/layer-group.svg" alt="Stack" width="20" height="20" onerror="this.onerror=null;this.src='icons/layer-group.svg'">
+              <img src="icons/layer-group.svg" alt="Stack" width="20" height="20" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/layer-group.svg'">
               <span>Stack</span>
             <span class="ripple"></span></button>
             <button data-nav="brain">
-              <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/user.svg" alt="Usuário" width="20" height="20" onerror="this.onerror=null;this.src='icons/user.svg'">
+              <img src="icons/user.svg" alt="Usuário" width="20" height="20" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/user.svg'">
               <span>Usuário</span>
             <span class="ripple"></span></button>
             <button data-nav="home">
-              <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/yin-yang.svg" alt="Arquétipo" width="20" height="20" onerror="this.onerror=null;this.src='icons/yin-yang.svg'">
+              <img src="icons/yin-yang.svg" alt="Arquétipo" width="20" height="20" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/yin-yang.svg'">
               <span>Arquétipo</span>
             <span class="ripple"></span></button>
             <button data-nav="chat">
-              <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/comments.svg" alt="Chat" width="20" height="20" onerror="this.onerror=null;this.src='icons/comments.svg'">
+              <img src="icons/comments.svg" alt="Chat" width="20" height="20" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/comments.svg'">
               <span>Chat</span>
             <span class="ripple"></span></button>
           <button data-audio="true" id="archAudioBtn">
-            <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/microphone-lines.svg" alt="Áudio" width="20" height="20" onerror="this.onerror=null;this.src='icons/microphone-lines.svg'">
+            <img src="icons/microphone-lines.svg" alt="Áudio" width="20" height="20" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/microphone-lines.svg'">
             <span>Áudio</span>
           <span class="ripple"></span></button>
           </div>
         </div><div class="cards">
           <button class="card fx-trans fx-press ring" data-nav="apps">
             <div class="ico">
-<img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/folder-open.svg" alt="Apps" width="24" height="24" onerror="this.onerror=null;this.src='icons/folder-open.svg'">
+<img src="icons/folder-open.svg" alt="Apps" width="24" height="24" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/folder-open.svg'">
             </div>
             <div>
               <div style="font-weight:800">Apps</div>
@@ -1349,7 +1491,7 @@ body[data-theme="blue1"] #chatFeed .msg.user { background: rgba(232,240,255,0.10
           </button>
           <button class="card fx-trans fx-press ring" data-nav="stack">
             <div class="ico">
-<img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/layer-group.svg" alt="Stack" width="24" height="24" onerror="this.onerror=null;this.src='icons/layer-group.svg'">
+<img src="icons/layer-group.svg" alt="Stack" width="24" height="24" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/layer-group.svg'">
             </div>
             <div>
               <div style="font-weight:800">Stack</div>
@@ -1359,7 +1501,7 @@ body[data-theme="blue1"] #chatFeed .msg.user { background: rgba(232,240,255,0.10
           </button>
           <button class="card fx-trans fx-press ring" data-nav="brain">
             <div class="ico">
-<img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/user.svg" alt="Usuário" width="24" height="24" onerror="this.onerror=null;this.src='icons/user.svg'">
+<img src="icons/user.svg" alt="Usuário" width="24" height="24" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/user.svg'">
             </div>
             <div>
               <div style="font-weight:800">Usuário</div>
@@ -1369,7 +1511,7 @@ body[data-theme="blue1"] #chatFeed .msg.user { background: rgba(232,240,255,0.10
           </button>
           <button class="card fx-trans fx-press ring" data-nav="home">
             <div class="ico">
-<img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/yin-yang.svg" alt="Arquétipo" width="24" height="24" onerror="this.onerror=null;this.src='icons/yin-yang.svg'">
+<img src="icons/yin-yang.svg" alt="Arquétipo" width="24" height="24" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/yin-yang.svg'">
             </div>
             <div>
               <div style="font-weight:800">Arquétipo</div>
@@ -1397,7 +1539,7 @@ body[data-theme="blue1"] #chatFeed .msg.user { background: rgba(232,240,255,0.10
                 <input id="openInside" type="checkbox" checked=""> abrir dentro
               </label>
               <button id="btnToggleLocal" class="btn fx-trans fx-press ring">
-                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/folder-open.svg" alt="Locais" width="16" height="16" onerror="this.onerror=null;this.src='icons/folder-open.svg'" style="margin-right:4px">
+                <img src="icons/folder-open.svg" alt="Locais" width="16" height="16" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/folder-open.svg'" style="margin-right:4px">
                 Mostrar Locais<span class="ripple"></span>
               </button>
             </div>
@@ -1409,11 +1551,11 @@ body[data-theme="blue1"] #chatFeed .msg.user { background: rgba(232,240,255,0.10
                 Adicionar Locais<span class="ripple"></span>
               </button>
               <button id="btnExport" class="btn fx-trans fx-press ring">
-                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/file-export.svg" alt="Exportar" width="16" height="16" onerror="this.onerror=null;this.src='icons/file-export.svg'" style="margin-right:4px">
+                <img src="icons/file-export.svg" alt="Exportar" width="16" height="16" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/file-export.svg'" style="margin-right:4px">
                 Exportar Locais<span class="ripple"></span>
               </button>
               <button id="btnClear" class="btn fx-trans fx-press ring">
-                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/trash.svg" alt="Limpar" width="16" height="16" onerror="this.onerror=null;this.src='icons/trash.svg'" style="margin-right:4px">
+                <img src="icons/trash.svg" alt="Limpar" width="16" height="16" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/trash.svg'" style="margin-right:4px">
                 Limpar Locais<span class="ripple"></span>
               </button>
             </div>
@@ -1431,12 +1573,12 @@ body[data-theme="blue1"] #chatFeed .msg.user { background: rgba(232,240,255,0.10
           <div style="font-weight:800; display:flex; align-items:center; gap:8px">
             Sessões
             <button id="btnCloseAll" class="btn fx-trans fx-press ring" title="Fechar todas">
-              <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/xmark.svg" alt="Fechar todas" width="16" height="16" onerror="this.onerror=null;this.src='icons/xmark.svg'" style="margin-right:4px">
+              <img src="icons/xmark.svg" alt="Fechar todas" width="16" height="16" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/xmark.svg'" style="margin-right:4px">
               Fechar todas<span class="ripple"></span>
             </button>
             <!-- Botão para criar grupos de sessões -->
             <button id="btnAddGroup" class="btn fx-trans fx-press ring" title="Novo grupo">
-              <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/folder-plus.svg" alt="Novo grupo" width="16" height="16" onerror="this.onerror=null;this.src='icons/folder-plus.svg'" style="margin-right:4px">
+              <img src="icons/folder-plus.svg" alt="Novo grupo" width="16" height="16" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/folder-plus.svg'" style="margin-right:4px">
               Novo grupo<span class="ripple"></span>
             </button>
             <!-- Botão para enviar um HTML local e abrir como sessão -->
@@ -1588,24 +1730,24 @@ body[data-theme="blue1"] #chatFeed .msg.user { background: rgba(232,240,255,0.10
   <nav class="tabbar">
     <div class="inner">
       <button class="tab fx-trans fx-press ring" data-nav="home">
-<img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/house.svg" alt="Home" width="18" height="18" onerror="this.onerror=null;this.src='icons/house.svg'">
+<img src="icons/house.svg" alt="Home" width="18" height="18" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/house.svg'">
         <span style="display:none">Home</span><span class="ripple"></span>
       </button>
       <button class="tab fx-trans fx-press ring" data-nav="apps">
-<img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/folder-open.svg" alt="Apps" width="18" height="18" onerror="this.onerror=null;this.src='icons/folder-open.svg'">
+<img src="icons/folder-open.svg" alt="Apps" width="18" height="18" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/folder-open.svg'">
         <span style="display:none">Apps</span><span class="ripple"></span>
       </button>
       <button class="tab fx-trans fx-press ring" data-nav="stack">
-<img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/layer-group.svg" alt="Stack" width="18" height="18" onerror="this.onerror=null;this.src='icons/layer-group.svg'">
+<img src="icons/layer-group.svg" alt="Stack" width="18" height="18" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/layer-group.svg'">
         <span style="display:none">Stack</span><span class="ripple"></span>
       </button>
       <button class="tab fx-trans fx-press ring active" data-nav="brain">
-<img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/brain.svg" alt="Brain" width="18" height="18" onerror="this.onerror=null;this.src='icons/brain.svg'">
+<img src="icons/brain.svg" alt="Brain" width="18" height="18" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/brain.svg'">
         <span style="display:none">Brain</span><span class="ripple"></span>
       </button>
       <!-- Botão da nova aba Chat -->
       <button class="tab fx-trans fx-press ring" data-nav="chat">
-<img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/comments.svg" alt="Chat" width="18" height="18" onerror="this.onerror=null;this.src='icons/comments.svg'">
+<img src="icons/comments.svg" alt="Chat" width="18" height="18" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/comments.svg'">
         <span style="display:none">Chat</span><span class="ripple"></span>
       </button>
     </div>
@@ -1619,7 +1761,7 @@ body[data-theme="blue1"] #chatFeed .msg.user { background: rgba(232,240,255,0.10
       <img src="icons/pen-to-square.svg" alt="Texto" width="20" height="20" onerror="this.onerror=null;this.src='icons/pen-to-square.svg'">
     <span class="ripple"></span></button>
     <button id="homeVoiceBtn" class="home-btn">
-      <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/microphone.svg" alt="Voz" width="20" height="20" onerror="this.onerror=null;this.src='icons/microphone.svg'">
+      <img src="icons/microphone.svg" alt="Voz" width="20" height="20" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/microphone.svg'">
     <span class="ripple"></span></button>
   </div>
   <!-- Overlay de input para envio rápido de mensagens na Home -->
@@ -1627,7 +1769,7 @@ body[data-theme="blue1"] #chatFeed .msg.user { background: rgba(232,240,255,0.10
     <form id="homeInputForm" autocomplete="off">
       <input id="homeInput" type="text" placeholder="Escreva aqui…" autocomplete="off">
       <button type="submit">
-        <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/paper-plane.svg" alt="Enviar" width="18" height="18" onerror="this.onerror=null;this.src='icons/paper-plane.svg'">
+        <img src="icons/paper-plane.svg" alt="Enviar" width="18" height="18" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/paper-plane.svg'">
       <span class="ripple"></span></button>
     </form>
   </div>
@@ -2930,7 +3072,7 @@ body[data-theme="blue1"] #chatFeed .msg.user { background: rgba(232,240,255,0.10
       dock.innerHTML = '';
       $$('.session').forEach(s => {
         const meta = JSON.parse(s.dataset.meta || '{}');
-        dock.appendChild(badge({ title: meta.title, sid: s.dataset.sid }))
+        dock.appendChild(badge({ title: "", sid: s.dataset.sid }))
       });
       // Atualize o status de sessões na home
       try { updateHomeStatus(); } catch {}
@@ -3324,334 +3466,8 @@ body[data-theme="blue1"] #chatFeed .msg.user { background: rgba(232,240,255,0.10
     $$('button').forEach(addRipple);
   </script><div style="position: fixed; right: 14px; bottom: calc(var(--tabsH) + 16px); display: grid; gap: 8px; z-index: 120;"></div><div style="position: fixed; right: 14px; bottom: calc(var(--tabsH) + 16px); display: grid; gap: 8px; z-index: 120;"></div>
 <!-- Local Storage Modal (safe-placed near end of body) -->
-<div id="modalLS" class="modal" aria-hidden="true">
-  <div class="panel">
-    <div style="display:flex;align-items:center;gap:10px;justify-content:space-between">
-      <h3 style="margin:0">Local Storage</h3>
-      <button id="lsClose" class="btn fx-trans fx-press ring">Fechar<span class="ripple"></span></button>
-    </div>
-    <div class="mut" id="lsStats" style="margin-top:8px;font-size:12px">–</div>
-    <!-- Informações rápidas do usuário, assistente e arquétipo ativo -->
-    <div id="lsInfo" style="margin-top:8px;font-size:12px;line-height:1.4">
-      <div><strong>Usuário:</strong> <span id="lsUserDisplay">–</span></div>
-      <div><strong>Assistente:</strong> <span id="lsAssistantDisplay">–</span></div>
-      <div><strong>Arquétipo ativo:</strong> <span id="lsArchDisplay">–</span></div>
-    </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
-      <button id="lsExport" class="btn fx-trans fx-press ring">Exportar<span class="ripple"></span></button>
-      <button id="lsImport" class="btn fx-trans fx-press ring">Importar<span class="ripple"></span></button>
-      <button id="lsClear" class="btn fx-trans fx-press ring">Limpar LS<span class="ripple"></span></button>
-      <button id="lsClearIDB" class="btn fx-trans fx-press ring">Limpar IndexDB<span class="ripple"></span></button>
-      <button id="lsReloadPage" class="btn fx-trans fx-press ring">Atualizar página<span class="ripple"></span></button>
-    </div>
-    <!-- Lista dinâmica de itens armazenados no LocalStorage -->
-    <div id="lsList" style="margin-top:12px; max-height:200px; overflow:auto; font-size:12px; color:var(--fg);"></div>
-    <!-- Botão para adicionar novo item ao LocalStorage -->
-    <div style="margin-top:10px; display:flex; gap:6px;">
-      <button id="lsAdd" class="btn fx-trans fx-press ring">Adicionar item<span class="ripple"></span></button>
-    </div>
-    <div class="mut" style="margin-top:10px;font-size:11px">Dica: exporte antes de limpar. O tamanho é aproximado (UTF-16).</div>
-  </div>
-</div>
-<script>
-// === Fala por voz usando Web Speech API ===
-// Estas funções utilizam a API de síntese de fala do navegador para
-// pronunciar mensagens. A voz padrão é configurada para o português do Brasil.
-// Fala uma mensagem opcionalmente selecionando uma voz preferida.
-function pickVoice(pref) {
-  try {
-    const voices = speechSynthesis.getVoices();
-    if (!voices || !voices.length) return null;
-    // Se houver uma preferência, tente encontrá-la pelo nome
-    if (pref) {
-      const found = voices.find(v => v.name && v.name.toLowerCase().includes(pref.toLowerCase()));
-      if (found) return found;
-    }
-    // Caso contrário, escolha uma voz em português ou a primeira disponível
-    const ptVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('pt'));
-    return ptVoice || voices[0];
-  } catch (err) {
-    return null;
-  }
-}
-function speakMsg(msg, voicePref) {
-  try {
-    const utter = new SpeechSynthesisUtterance(msg);
-    utter.lang = 'pt-BR';
-    const voice = pickVoice(voicePref);
-    if (voice) utter.voice = voice;
-    speechSynthesis.speak(utter);
-  } catch (e) {
-    console.warn('Speech synthesis not supported', e);
-  }
-}
-function speakSplash() {
-  // Recupera o nome do usuário salvo no localStorage para personalizar a mensagem
-  const name = (localStorage.getItem('infodose:userName') || '').trim();
-  // Se houver nome de usuário, use-o; caso contrário utilize "Dual" como padrão
-  const msg = name ? `${name}, pulso ativo.` : 'Oi Dual, pulso ativo.';
-  // Use a voz selecionada pelo usuário no Brain, ou "Joana" como fallback
-  const prefVoice = (localStorage.getItem('infodose:speechVoice') || '').trim() || 'Joana';
-  speakMsg(msg, prefVoice);
-}
-function speakHomeGreeting() {
-  // Esta função pode ser chamada manualmente para saudar o usuário na home.
-  // Não é chamada automaticamente para evitar saudações inesperadas.
-  const assistant = (localStorage.getItem('dual.assistantName') || localStorage.getItem('infodose:assistantName') || 'Dual').trim();
-  // Determine arquétipo selecionado a partir do select (remove .html)
-  let archName = '';
-  const sel = document.getElementById('arch-select');
-  if (sel && sel.options.length > 0) {
-    const opt = sel.options[sel.selectedIndex];
-    if (opt) archName = opt.textContent.replace(/\.html$/i, '');
-  }
-  let msg = '';
-  // Determine o nome de saudação ou utilize "Dual" como padrão
-  const userName = (localStorage.getItem('infodose:userName') || '').trim();
-  const greet = userName || 'Dual';
-  if (assistant && archName) {
-    msg = `Oi ${greet}, eu sou ${assistant}. Ativo o impulso com o arquétipo ${archName}.`;
-  } else if (assistant) {
-    msg = `Oi ${greet}, eu sou ${assistant}.`;
-  } else {
-    msg = `Oi ${greet}, ative seu impulso configurando um arquétipo.`;
-  }
-  // Use a voz salva pelo usuário ou o nome do arquétipo; se ambos vazios, use Joana
-  const prefVoice = (localStorage.getItem('infodose:speechVoice') || '').trim();
-  speakMsg(msg, archName || prefVoice || 'Joana');
-}
-// ===== LS Control (isolated; safe append) =====
-(function(){
-  function toast(msg, type){ try{ window.toast(msg, type || 'ok') }catch{ console.log(msg) } }
-  const modal = document.getElementById('modalLS');
-  const stats = document.getElementById('lsStats');
-  const btn = document.getElementById('btnLS');
-  const btnClose = document.getElementById('lsClose');
-  const btnExport = document.getElementById('lsExport');
-  const btnImport = document.getElementById('lsImport');
-  const btnClear = document.getElementById('lsClear');
-  const btnClearIDB = document.getElementById('lsClearIDB');
-  // Elementos adicionais para exibir e editar LocalStorage
-  const lsList = document.getElementById('lsList');
-  const btnAdd  = document.getElementById('lsAdd');
 
-  function approxSize(){
-    let bytes = 0;
-    for (let i=0; i<localStorage.length; i++){
-      const k = localStorage.key(i) || '';
-      const v = localStorage.getItem(k) || '';
-      bytes += 2 * (k.length + v.length);
-    }
-    const KB = 1024, MB = KB*1024;
-    const human = bytes > MB ? (bytes/MB).toFixed(2)+' MB' : (bytes>KB ? (bytes/KB).toFixed(1)+' KB' : bytes+' B');
-    return { bytes, human, keys: localStorage.length };
-  }
-  function updateStats(){ if (!stats) return; const s = approxSize(); stats.textContent = 'Chaves: ' + s.keys + ' · Tamanho aprox: ' + s.human; }
-  // Renderiza a lista de itens no LocalStorage dentro do modal.  Cada item possui campos
-  // editáveis para chave e valor, além de botões para salvar ou excluir.
-  function renderLS(){
-    if (!lsList) return;
-    lsList.innerHTML = '';
-    const keys = [];
-    for (let i=0; i<localStorage.length; i++){
-      const k = localStorage.key(i);
-      if (k != null) keys.push(k);
-    }
-    // Ordene as chaves para exibir de forma consistente
-    keys.sort();
-    keys.forEach((key) => {
-      const value = localStorage.getItem(key) ?? '';
-      const row = document.createElement('div');
-      row.style.display = 'flex';
-      row.style.alignItems = 'center';
-      row.style.gap = '6px';
-      row.style.marginTop = '6px';
-      // Campo de chave
-      const keyInput = document.createElement('input');
-      keyInput.value = key;
-      keyInput.placeholder = 'chave';
-      keyInput.style.flex = '1 1 30%';
-      keyInput.style.padding = '4px';
-      keyInput.style.borderRadius = '6px';
-      keyInput.style.border = '1px solid rgba(255,255,255,0.15)';
-      keyInput.style.background = 'rgba(255,255,255,0.05)';
-      keyInput.style.color = 'inherit';
-      // Campo de valor
-      const valInput = document.createElement('input');
-      valInput.value = value;
-      valInput.placeholder = 'valor';
-      valInput.style.flex = '1 1 50%';
-      valInput.style.padding = '4px';
-      valInput.style.borderRadius = '6px';
-      valInput.style.border = '1px solid rgba(255,255,255,0.15)';
-      valInput.style.background = 'rgba(255,255,255,0.05)';
-      valInput.style.color = 'inherit';
-      // Botão salvar
-      const btnSave = document.createElement('button');
-      btnSave.textContent = 'Salvar';
-      btnSave.className = 'btn fx-trans fx-press ring';
-      btnSave.style.fontSize = '11px';
-      // Botão excluir
-      const btnDel = document.createElement('button');
-      btnDel.textContent = 'Del';
-      btnDel.className = 'btn fx-trans fx-press ring';
-      btnDel.style.fontSize = '11px';
-      // Ações
-      btnSave.addEventListener('click', () => {
-        const newKey = keyInput.value.trim();
-        const newVal = valInput.value;
-        if (!newKey) { toast('Chave vazia', 'warn'); return; }
-        if (newKey !== key) localStorage.removeItem(key);
-        try { localStorage.setItem(newKey, newVal); toast('Item salvo', 'ok'); } catch(e){ toast('Erro ao salvar', 'err'); }
-        renderLS(); updateStats();
-      });
-      btnDel.addEventListener('click', () => {
-        if (!confirm('Excluir a chave "'+keyInput.value+'"?')) return;
-        localStorage.removeItem(keyInput.value);
-        renderLS(); updateStats(); toast('Item removido', 'warn');
-      });
-      row.appendChild(keyInput);
-      row.appendChild(valInput);
-      row.appendChild(btnSave);
-      row.appendChild(btnDel);
-      lsList.appendChild(row);
-    });
-  }
-  function openModal(){ if (!modal) return; updateStats(); modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); }
-  function closeModal(){ if (!modal) return; modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); }
 
-  // Ao abrir o modal, também carregue a lista de itens atuais
-  const _openModalRef = openModal;
-  function openModalLS(){
-    _openModalRef();
-    renderLS();
-    // Preencha informações do usuário, assistente e arquétipo ativo
-    try {
-      const uDisplay = document.getElementById('lsUserDisplay');
-      const aDisplay = document.getElementById('lsAssistantDisplay');
-      const archDisplay = document.getElementById('lsArchDisplay');
-      // Tente recuperar o nome do usuário das chaves salvas
-      const userName = (localStorage.getItem('dual.name') || localStorage.getItem('infodose:userName') || '').trim();
-      const assistantName = (localStorage.getItem('dual.assistantName') || localStorage.getItem('infodose:assistantName') || 'Dual').trim();
-      // Obtenha o arquétipo ativo a partir do seletor
-      let arch = '';
-      const archSel = document.getElementById('arch-select');
-      if (archSel && archSel.value) arch = archSel.value.replace(/\.html$/i, '');
-      if (uDisplay) uDisplay.textContent = userName || '–';
-      if (aDisplay) aDisplay.textContent = assistantName || '–';
-      if (archDisplay) archDisplay.textContent = arch || '–';
-    } catch {}
-    // Botão para recarregar a página
-    const btnReload = document.getElementById('lsReloadPage');
-    if (btnReload) {
-      btnReload.onclick = () => { location.reload(); };
-    }
-  }
-  // Redefina o evento para usar a nova função
-  if (btn) btn.addEventListener('click', openModalLS);
-
-  // O botão LS já foi associado à função openModalLS acima.
-  if (btnClose) btnClose.addEventListener('click', closeModal);
-  if (modal) modal.addEventListener('click', (e)=>{ if (e.target === modal) closeModal(); });
-
-  // Botão para adicionar novo item
-  if (btnAdd) btnAdd.addEventListener('click', () => {
-    if (!lsList) return;
-    // Insira uma nova linha em branco no início para o usuário digitar
-    const row = document.createElement('div');
-    row.style.display = 'flex';
-    row.style.alignItems = 'center';
-    row.style.gap = '6px';
-    row.style.marginTop = '6px';
-    const keyInput = document.createElement('input');
-    keyInput.placeholder = 'nova chave';
-    keyInput.style.flex = '1 1 30%';
-    keyInput.style.padding = '4px';
-    keyInput.style.borderRadius = '6px';
-    keyInput.style.border = '1px solid rgba(255,255,255,0.15)';
-    keyInput.style.background = 'rgba(255,255,255,0.05)';
-    keyInput.style.color = 'inherit';
-    const valInput = document.createElement('input');
-    valInput.placeholder = 'novo valor';
-    valInput.style.flex = '1 1 50%';
-    valInput.style.padding = '4px';
-    valInput.style.borderRadius = '6px';
-    valInput.style.border = '1px solid rgba(255,255,255,0.15)';
-    valInput.style.background = 'rgba(255,255,255,0.05)';
-    valInput.style.color = 'inherit';
-    const btnSave = document.createElement('button');
-    btnSave.textContent = 'Salvar';
-    btnSave.className = 'btn fx-trans fx-press ring';
-    btnSave.style.fontSize = '11px';
-    const btnCancel = document.createElement('button');
-    btnCancel.textContent = 'Cancelar';
-    btnCancel.className = 'btn fx-trans fx-press ring';
-    btnCancel.style.fontSize = '11px';
-    btnSave.addEventListener('click', () => {
-      const newKey = keyInput.value.trim();
-      const newVal = valInput.value;
-      if (!newKey) { toast('Chave vazia', 'warn'); return; }
-      try {
-        localStorage.setItem(newKey, newVal);
-        toast('Item adicionado', 'ok');
-      } catch(e) { toast('Erro ao adicionar', 'err'); }
-      renderLS(); updateStats();
-    });
-    btnCancel.addEventListener('click', () => {
-      row.remove();
-    });
-    row.appendChild(keyInput);
-    row.appendChild(valInput);
-    row.appendChild(btnSave);
-    row.appendChild(btnCancel);
-    lsList.prepend(row);
-  });
-
-  if (btnExport) btnExport.addEventListener('click', () => {
-    const dump = {};
-    for (let i=0; i<localStorage.length; i++){ const k = localStorage.key(i); if (!k) continue; dump[k] = localStorage.getItem(k); }
-    const blob = new Blob([JSON.stringify({ when: Date.now(), dump }, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'localStorage_backup.json'; a.click();
-    setTimeout(()=>URL.revokeObjectURL(a.href), 400);
-    toast('LS exportado', 'ok');
-  });
-
-  if (btnImport) btnImport.addEventListener('click', () => {
-    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json,application/json';
-    inp.onchange = (ev) => {
-      const f = ev.target.files && ev.target.files[0]; if (!f) return;
-      const r = new FileReader();
-      r.onload = () => {
-        try {
-          const obj = JSON.parse(String(r.result||'') || '{}'); const data = obj.dump || obj || {};
-          Object.keys(data).forEach(k => { try { localStorage.setItem(k, String(data[k])) } catch{} });
-          updateStats(); toast('LS importado', 'ok');
-        } catch { toast('Erro no JSON', 'err'); }
-      };
-      r.readAsText(f);
-    };
-    inp.click();
-  });
-
-  if (btnClear) btnClear.addEventListener('click', () => {
-    if (!confirm('Limpar TODO o Local Storage?')) return;
-    try { localStorage.clear(); updateStats(); toast('LS limpo', 'warn'); } catch(e){ alert(e.message) }
-  });
-
-  if (btnClearIDB) btnClearIDB.addEventListener('click', async () => {
-    if (!confirm('Apagar bancos do IndexDB?')) return;
-    try {
-      if ('databases' in indexedDB) {
-        const dbs = await indexedDB.databases();
-        for (const db of dbs) { if (db && db.name) indexedDB.deleteDatabase(db.name); }
-      } else {
-        ['infodose','dual','uno'].forEach(name => { try { indexedDB.deleteDatabase(name) } catch{} });
-      }
-      toast('IndexDB limpo', 'warn');
-    } catch(e){ alert('Falha no IndexDB: ' + e.message) }
-  });
-})();
-</script>
 
 <!-- Script para ocultar o splash screen após o carregamento completo da página -->
 <!-- Script adicional para o Stacks estendido: upload de HTML e criação de grupos -->
@@ -4525,7 +4341,12 @@ window.addEventListener('load', () => {
 
 })(); // end ChatPlus
 </script>
-  <style>
+  <script src="dual_multiagent_v1.js"></script>
+  <script src="dual_multiagent_v12_locked.js"></script>
+  <script src="openrouter_hardlock_model_v1.js" defer=""></script>
+
+
+<style>
 /* --------------------------------------------
    KOBLLUX • Compact Mode — Mobile-first Vertical
    Colar após o CSS atual
@@ -4932,296 +4753,17 @@ main .row > * + * { margin-top: .5rem; }
 })();
 </script>
 
-<script src="dual_multiagent_v12_locked_fixed.js"></script>
-<script src="UNO_patch_arch3d_particles.js"></script>
-<script src="blue-1.js"></script>
 
-<script>
-(function(){
-  const selArch   = document.getElementById('arch-select');
-  const selPreset = document.getElementById('arch-preset');
-  const frame     = document.getElementById('arch-frame');
-  if (!selArch || !frame || !selPreset) return;
-  const LS = { get:(k,d)=>{ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d }catch{ return d } },
-               set:(k,v)=>{ try{ localStorage.setItem(k, JSON.stringify(v)) }catch{} } };
-  // Load saved preset
-  const saved = (LS.get('uno:arch:preset')||'blue1').toLowerCase();
-  if (['blue1','strong','cinematic','off'].includes(saved)) selPreset.value = saved;
-  function apply(){
-    if (!selArch.value) return;
-    const url = new URL(selArch.value, location.href);
-    const preset = selPreset.value || 'blue1';
-    if (preset==='off') { url.searchParams.delete('preset'); } else { url.searchParams.set('preset', preset); }
-    frame.src = url.toString();
-    LS.set('uno:arch:preset', preset);
-  }
-  selPreset.addEventListener('change', apply);
-  selArch.addEventListener('change', apply);
-  // Initial apply if iframe empty
-  if (!frame.getAttribute('src')) apply();
-})();
-</script>
-<script type="module" src="UNO_patch_arch3d_bloom.js" defer></script>
- 
+  <link rel="stylesheet" href="uno_showcase_patch.css">
+  <script src="uno_showcase_patch.js" defer></script>
 
-<script type="module" src="UNO_patch_arch3d.js"defer></script>
-
-
-
- <script type="module" src="dual_multiagent_v12_locked_fixed.js"defer></script>
- 
-
- <script type="module" src="UNO_patch_arch3d_particles.js" defer></script>
-
- <script type="module" src="blue-1.js"defer></script>
-
-
- <script type="module" src="uno_audio_breath.js" defer></script>
-<script>
-// === KOBLLUX 3D Archetypes — inline engine ===
-(function(){
-  const $ = (q,r=document)=>r.querySelector(q);
-  const archSelect = $('#arch-select');
-  const archCircle = $('#arch-circle');
-  const threeCanvasContainer = $('#three-canvas');
-  if(!archSelect || !archCircle || !threeCanvasContainer || !window.THREE){ return; }
-
-  // Map 12 archetypes (baseName => config)
-  const ARQ = {
-    Atlas:{ color:0x00FF7F, geo:()=>new THREE.BoxGeometry(2,2,2), overlay:'rgba(64,158,255,0.22)', flow:{rotation:0.001, noise:0.05} },
-    Nova:{ color:0xFF4500, geo:()=>new THREE.TetrahedronGeometry(1.5), overlay:'rgba(255,82,177,0.22)', flow:{rotation:0.008, noise:0.2} },
-    Vitalis:{ color:0x48DAA8, geo:()=>new THREE.ConeGeometry(1.3,2.2,7), overlay:'rgba(87,207,112,0.22)', flow:{rotation:0.004, noise:0.12} },
-    Pulse:{ color:0x00BFFF, geo:()=>new THREE.TorusKnotGeometry(0.8,0.26,160,24), overlay:'rgba(0,191,255,0.22)', flow:{rotation:0.007, noise:0.18} },
-    Artemis:{ color:0xBA82DB, geo:()=>new THREE.OctahedronGeometry(1.5), overlay:'rgba(186,130,219,0.22)', flow:{rotation:0.005, noise:0.3} },
-    Serena:{ color:0x8CBEFF, geo:()=>new THREE.SphereGeometry(1.6, 24, 20), overlay:'rgba(140,190,255,0.22)', flow:{rotation:0.002, noise:0.05} },
-    Kaos:{ color:0xFF4D6D, geo:()=>new THREE.TetrahedronGeometry(1.5,1), overlay:'rgba(255,77,109,0.22)', flow:{rotation:0.012, noise:0.35} },
-    Genus:{ color:0x57CF70, geo:()=>new THREE.DodecahedronGeometry(1.5), overlay:'rgba(87,207,112,0.22)', flow:{rotation:0.003, noise:0.1} },
-    Lumine:{ color:0xFFD54F, geo:()=>new THREE.IcosahedronGeometry(1.5), overlay:'rgba(255,213,79,0.22)', flow:{rotation:0.003, noise:0.1} },
-    Rhea:{ color:0x00D1B2, geo:()=>new THREE.DodecahedronGeometry(1.5), overlay:'rgba(0,209,178,0.22)', flow:{rotation:0.002, noise:0.15} },
-    Solus:{ color:0x6495ED, geo:()=>new THREE.OctahedronGeometry(1.5,1), overlay:'rgba(100,149,237,0.22)', flow:{rotation:0.002, noise:0.1} },
-    Aion:{ color:0xFFD700, geo:()=>new THREE.IcosahedronGeometry(1.5,1), overlay:'rgba(255,159,67,0.22)', flow:{rotation:0.001, noise:0.05} }
-  };
-
-  function baseNameFromValue(val){
-    if(!val) return 'Atlas';
-    const base = String(val).replace(/\.html$/i,'').trim().toLowerCase();
-    return (base.charAt(0).toUpperCase()+base.slice(1));
-  }
-
-  // THREE setup
-  let scene, camera, renderer, crystal;
-  let isDragging=false, prev={x:0,y:0};
-  const sens=0.005, clock=new THREE.Clock();
-
-  function init(){
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(75, threeCanvasContainer.clientWidth/threeCanvasContainer.clientHeight, 0.1, 1000);
-    camera.position.z = 4;
-    renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
-    renderer.setSize(threeCanvasContainer.clientWidth, threeCanvasContainer.clientHeight);
-    renderer.setPixelRatio(window.devicePixelRatio||1);
-    threeCanvasContainer.innerHTML='';
-    threeCanvasContainer.appendChild(renderer.domElement);
-
-    scene.add(new THREE.AmbientLight(0xffffff,0.5));
-    const pl = new THREE.PointLight(0xffffff,1.6,100); pl.position.set(5,5,5); scene.add(pl);
-
-    updateCrystal();
-    animate();
-
-    archCircle.addEventListener('pointerdown', e=>{isDragging=true; prev.x=e.clientX; prev.y=e.clientY;});
-    archCircle.addEventListener('pointerleave', ()=>isDragging=false);
-    archCircle.addEventListener('pointerup', ()=>isDragging=false);
-    archCircle.addEventListener('pointermove', e=>{
-      if(!isDragging || !crystal) return;
-      const dx = e.clientX - prev.x, dy = e.clientY - prev.y;
-      crystal.rotation.y += dx*sens; crystal.rotation.x += dy*sens;
-      prev.x=e.clientX; prev.y=e.clientY;
-    });
-    window.addEventListener('resize', onResize);
-  }
-
-  function onResize(){
-    if(!renderer) return;
-    const w = threeCanvasContainer.clientWidth, h = threeCanvasContainer.clientHeight;
-    camera.aspect = w/h; camera.updateProjectionMatrix();
-    renderer.setSize(w,h);
-  }
-
-  function applyOverlayFor(name){
-    const key = name in ARQ ? name : 'Atlas';
-    const col = ARQ[key].overlay;
-    document.documentElement.style.setProperty('--arch-overlay', col);
-    // if there's applyArchOverlay override in page, let it compute too
-    if(typeof window.applyArchOverlay === 'function'){
-      try { window.applyArchOverlay(name.toLowerCase()); } catch(e){}
-    }
-  }
-
-  function updateCrystal(){
-    const name = baseNameFromValue(archSelect.value);
-    const cfg = ARQ[name] || ARQ['Atlas'];
-    if(crystal) scene.remove(crystal);
-    const geo = cfg.geo();
-    const mat = new THREE.MeshStandardMaterial({ color: cfg.color, metalness:0.7, roughness:0.3, transparent:true, opacity:0.85 });
-    const mesh = new THREE.Mesh(geo, mat);
-    const edges = new THREE.EdgesGeometry(geo);
-    const wire = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color:0xffffff, opacity:0.4, transparent:true }));
-    crystal = new THREE.Group(); crystal.add(mesh); crystal.add(wire); scene.add(crystal);
-    applyOverlayFor(name);
-  }
-
-  function animate(){
-    requestAnimationFrame(animate);
-    if(crystal){
-      const name = baseNameFromValue(archSelect.value);
-      const flow = (ARQ[name]||ARQ['Atlas']).flow;
-      const t = clock.getElapsedTime();
-      crystal.rotation.x += flow.rotation + Math.sin(t*0.5)*flow.noise*0.01;
-      crystal.rotation.y += flow.rotation + Math.cos(t*0.3)*flow.noise*0.01;
-    }
-    renderer.render(scene,camera);
-  }
-
-  archSelect.addEventListener('change', updateCrystal);
-  // Hook prev/next buttons if present
-  const btnPrev = document.getElementById('arch-prev');
-  const btnNext = document.getElementById('arch-next');
-  if(btnPrev) btnPrev.addEventListener('click', ()=>setTimeout(updateCrystal, 10));
-  if(btnNext) btnNext.addEventListener('click', ()=>setTimeout(updateCrystal, 10));
-
-  // Start after DOM ready
-  init();
-})();
-</script>
-
-<!-- INFODOSE SFX LITE — START -->
-<script>
-/* INFODOSE SFX LITE (HTMLAudio) — drop-in
-   audio/sfx/{Arq}_{hit|whoosh|pad|pulse}.wav
-   audio/stingers/{Arq}_stinger_{impact|spark|glitch}.wav
-   audio/beds/{Arq}_bed_{15s|27s}.wav
-*/
-(function(){
-  const BASE = './audio';
-  const ARCHES = ["Atlas","Nova","Vitalis","Pulse","Artemis","Serena","Kaos","Genus","Lumine","Rhea","Solus","Aion"];
-  let arch = "Atlas";
-  let muted = false;
-  const cache = new Map();
-  let bedEl = null;
-
-  function url(key){
-    const parts = String(key).split(':');
-    if(parts[0]==='bed'){
-      let a = arch, len = '15s';
-      if(parts.length===2) len = parts[1];
-      if(parts.length===3){ a = parts[1]; len = parts[2]; }
-      return `${BASE}/beds/${a}_bed_${len}.wav`;
-    }
-    let a = arch, kind = key;
-    if(parts.length===2){ a = parts[0]; kind = parts[1]; }
-    if(['impact','spark','glitch'].includes(kind)) return `${BASE}/stingers/${a}_stinger_${kind}.wav`;
-    if(['whoosh','hit','pad','pulse'].includes(kind)) return `${BASE}/sfx/${a}_${kind}.wav`;
-    return `${BASE}/sfx/${a}_${kind}.wav`;
-  }
-  function getAudio(u){
-    if(cache.has(u)) return cache.get(u).cloneNode(true);
-    const a = new Audio(u); a.preload = 'auto';
-    cache.set(u, a);
-    return a.cloneNode(true);
-  }
-  function unlockiOS(){
-    const s = new Audio(); s.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=';
-    s.play().catch(()=>{});
-    window.removeEventListener('pointerdown', unlockiOS, {passive:true});
-    window.removeEventListener('touchstart', unlockiOS, {passive:true});
-  }
-  window.addEventListener('pointerdown', unlockiOS, {passive:true});
-  window.addEventListener('touchstart', unlockiOS, {passive:true});
-
-  function play(key, {vol=1, rate=1}={}){
-    if(muted) return;
-    const a = getAudio(url(key));
-    a.volume = Math.max(0, Math.min(1, vol));
-    a.playbackRate = rate;
-    a.play().catch(()=>{});
-    return a;
-  }
-  function setArchetype(name){
-    if(!name) return;
-    const A = name.charAt(0).toUpperCase()+name.slice(1).toLowerCase();
-    if(ARCHES.includes(A)) arch = A;
-  }
-  function playBed(a=arch, len='15s', {vol=0.35}={}){
-    stopBed();
-    const u = url(`bed:${a}:${len}`);
-    const aEl = getAudio(u);
-    aEl.loop = true;
-    aEl.volume = Math.max(0, Math.min(1, vol));
-    bedEl = aEl;
-    aEl.play().catch(()=>{});
-  }
-  function stopBed(){ try{ bedEl && bedEl.pause(); }catch(e){} bedEl=null; }
-  function setMuted(flag){ muted = !!flag; if(muted) stopBed(); }
-
-  function bind(root=document){
-    root.addEventListener('click', (e)=>{
-      const el = e.target.closest('[data-sfx]');
-      if(!el) return;
-      const key = el.getAttribute('data-sfx');
-      const vol = Number(el.getAttribute('data-sfx-vol')||1)||1;
-      const rate = Number(el.getAttribute('data-sfx-rate')||1)||1;
-      if(key.startsWith('bed')) playBed(undefined, undefined, {vol});
-      else play(key, {vol, rate});
-    });
-  }
-
-  function sel(q){ return document.querySelector(q); }
-  function qsa(q){ return Array.from(document.querySelectorAll(q)); }
-
-  function autotag(){
-    sel('#btnBack')?.setAttribute('data-sfx','hit');
-    sel('#btnDownload')?.setAttribute('data-sfx','impact');
-    sel('#btnHelp')?.setAttribute('data-sfx','whoosh');
-    sel('#btnBrain')?.setAttribute('data-sfx','whoosh');
-    sel('#btnLS')?.setAttribute('data-sfx','pulse');
-    qsa('nav.tabbar .tab').forEach(t=>t.setAttribute('data-sfx','whoosh'));
-    sel('#arch-prev')?.setAttribute('data-sfx','hit');
-    sel('#arch-next')?.setAttribute('data-sfx','hit');
-
-    const as = sel('#arch-select');
-    if(as){
-      as.addEventListener('change', ()=>{
-        const val = (as.value||'atlas.html').replace(/\.html$/i,'');
-        setArchetype(val);
-        play('spark',{vol:0.9});
-        playBed(val,'15s',{vol:0.30});
-      });
-      const init = (as.value||'atlas.html').replace(/\.html$/i,'');
-      setArchetype(init);
-    }
-    qsa('#archMenu button[data-nav]').forEach(b=>b.setAttribute('data-sfx','whoosh'));
-    sel('#archAudioBtn')?.setAttribute('data-sfx','spark');
-    sel('#homeTextBtn')?.setAttribute('data-sfx','hit');
-    sel('#homeVoiceBtn')?.setAttribute('data-sfx','spark');
-    ['#saveName','#saveAssistant','#saveVoice','#saveSK','#addModel','#btnPerf','#btnVoice']
-      .forEach(id=> document.querySelector(id)?.setAttribute('data-sfx','impact'));
-  }
-
-  window.sfx = { play, playBed, stopBed, setArchetype, setMuted, bind };
-  bind(document);
-  autotag();
-})();
-</script>
-<!-- INFODOSE SFX LITE — END -->
-
-<!-- === DualHub • Painel LocalStorage === -->
 <div id="lsModal" class="ls-modal" aria-hidden="true">
   <div class="ls-panel" id="lsPanel">
     <div class="ls-hdr">
       <div class="ls-ttl">LocalStorage • Presets, Chaves & Carteira SK</div>
       <div class="ls-actions">
         <button id="lsRescan">Re-scan</button>
+        <button id="lsRefresh">Atualizar página</button>
         <button id="lsExport">Exportar</button>
         <label for="lsImportFile" style="display:inline-block"><button type="button">Importar</button></label>
         <input id="lsImportFile" type="file" accept="application/json" hidden>
@@ -5248,6 +4790,19 @@ main .row > * + * { margin-top: .5rem; }
       <div class="meta">A chave <code>dual.keys.openrouter</code> recebe a chave marcada como <b>Ativa</b>. Desativar retira a chave ativa do uso (sem apagar a carteira).</div>
     </details>
 
+    <details class="presets" open>
+      <summary><strong>Overlay do Arquétipo</strong> <span class="type" style="opacity:.75">força</span></summary>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <div>Força:</div>
+        <div class="seg">
+          <button type="button" class="ls-ov" data-level="0">0</button>
+          <button type="button" class="ls-ov" data-level="-1">−1</button>
+          <button type="button" class="ls-ov" data-level="-2">−2</button>
+        </div>
+        <div class="meta">Salvo em <code>infodose:arch.overlay.level</code> • Default: −1 (12%).</div>
+      </div>
+    </details>
+
     <div class="meta"><span id="lsCount">—</span> • <span id="lsSize">—</span></div>
     <div class="list" id="lsList"></div>
 
@@ -5256,6 +4811,7 @@ main .row > * + * { margin-top: .5rem; }
       <div class="img-grid" id="imgGrid"></div>
     </details>
   </div>
+
 </div>
 
 
@@ -5365,8 +4921,7 @@ main .row > * + * { margin-top: .5rem; }
       left.innerHTML=`<div class="key">${key}${dis.has(key)?' <span class="type">(desativado)</span>':''}</div><div class="type">${inferType(val)} • ${prettyBytes((val||'').length)}</div>`;
       const ctr=document.createElement('div'); ctr.style.display='flex'; ctr.style.gap='8px'; ctr.style.flexWrap='wrap';
       const sw=document.createElement('div'); sw.className='switch'+(!dis.has(key)?' on':''); sw.title = (!dis.has(key)?'Desativar':'Ativar'); sw.onclick=()=>toggleDisabled(key);
-      const bEdit=document.createElement('button'); bEdit.textContent='Editar'; bEdit.onclick=()=>{ const next=prompt('Editar valor de
-'+key, val ?? ''); if(next==null) return; localStorage.setItem(key,String(next)); renderAll(); };
+      const bEdit=document.createElement('button'); bEdit.textContent='Editar'; bEdit.onclick=()=>{ const next=prompt('Editar valor de\n'+key, val ?? ''); if(next==null) return; localStorage.setItem(key,String(next)); renderAll(); };
       const bDel=document.createElement('button'); bDel.textContent='Apagar'; bDel.onclick=()=>{ if(confirm('Apagar '+key+'?')){ localStorage.removeItem(key); renderAll(); } };
       if(inferType(val)==='image'){ const bImg=document.createElement('button'); bImg.textContent='Ver imagem'; bImg.onclick=()=>addImagePreview(key,val); ctr.append(bImg); }
       ctr.append(sw,bEdit,bDel); head.append(left,ctr);
@@ -5380,28 +4935,394 @@ main .row > * + * { margin-top: .5rem; }
 
   const openLS = ()=>{ const m=$('#lsModal'); if(!m) return; m.classList.add('open'); m.setAttribute('aria-hidden','false'); renderAll(); renderWallet(); };
   const closeLS = ()=>{ const m=$('#lsModal'); if(!m) return; m.classList.remove('open'); m.setAttribute('aria-hidden','true'); };
-
   const renderAll = ()=>{ renderPresets(); renderLS(); };
 
-  // Wire up events when DOM is ready
   const ready = () => {
+    // Unify LS button (clone -> only our modal)
     const btn = document.getElementById('btnLS');
-    if(btn && !btn.dataset._lsbound){
-      btn.addEventListener('click', openLS);
-      btn.dataset._lsbound = '1';
+    if(btn && !btn.dataset._lsUnified){
+      const c=btn.cloneNode(true);
+      c.removeAttribute('onclick'); c.removeAttribute('href');
+      c.dataset._lsUnified='1';
+      c.addEventListener('click', (ev)=>{
+        ev.preventDefault(); ev.stopPropagation();
+        try{
+          document.querySelectorAll('.modal,[role="dialog"],[class*="modal"]').forEach(el=>{ if(el.id!=='lsModal'){ el.style.display='none'; el.classList.remove('open','show','visible'); el.setAttribute('aria-hidden','true'); } });
+        }catch(e){}
+        openLS();
+      }, {passive:false});
+      btn.parentNode.replaceChild(c, btn);
     }
+
     const c = $('#lsClose'); if(c) c.onclick = closeLS;
     const r = $('#lsRescan'); if(r) r.onclick = renderAll;
     const e = $('#lsExport'); if(e) e.onclick = exportLS;
     const imp = $('#lsImportFile'); if(imp) imp.addEventListener('change', ev=>{ const f=ev.target.files?.[0]; if(f) importLS(f); ev.target.value=''; });
     const clr = $('#lsClearDisabled'); if(clr) clr.onclick = ()=>{ localStorage.setItem(DISABLED_KEY,'[]'); renderAll(); };
+
     const modal = $('#lsModal'); if(modal) modal.addEventListener('click', (evt)=>{ if(evt.target===modal) closeLS(); });
     const skAdd = $('#skAdd'); if(skAdd) skAdd.onclick = ()=>{ const name=$('#skName').value.trim(); const key=$('#skValue').value.trim(); if(!name||!key) return alert('Informe nome e chave.'); addWalletItem(name,key); $('#skName').value=''; $('#skValue').value=''; };
+
+    // Overlay control in LS
+    const KEY='infodose:arch.overlay.level';
+    const LEVELS={"0":"16%","-1":"12%","-2":"8%"};
+    const apply=(lvl)=>{
+      const force=LEVELS[String(lvl)]||LEVELS["-1"];
+      document.documentElement.style.setProperty('--arch-overlay-strength', force);
+      if(window.ArchTint&&typeof ArchTint.set==='function'){ try{ ArchTint.set(null, String(lvl)); }catch(e){} }
+      document.querySelectorAll('.ls-ov[data-level]').forEach(b=>b.classList.toggle('on', b.dataset.level===String(lvl)));
+    };
+    const saved=localStorage.getItem(KEY)||"-1";
+    apply(saved);
+    $$('.ls-ov[data-level]').forEach(b=> b.addEventListener('click',()=>{ const lvl=b.dataset.level; localStorage.setItem(KEY, String(lvl)); apply(lvl); }, {passive:true}));
   };
   if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', ready); } else { ready(); }
 
-  // Expose a small API
   window.DualLS = { open: openLS, close: closeLS, render: renderAll };
+})();
+</script>
+
+
+<script id="ls-snpt-boot">
+(function(){
+  function ensure(){
+    if(document.getElementById('ls-panel-js') || document.getElementById('lsModal')) return;
+    fetch('lspanel.snpt', {cache:'no-store'}).then(r => r.ok ? r.text(): null).then(txt => {
+      if(!txt) return;
+      document.body.insertAdjacentHTML('beforeend', txt);
+      setTimeout(function(){
+        try{
+          if(window.DualLS && typeof window.DualLS.render==='function'){ window.DualLS.render(); }
+        }catch(e){}
+      }, 50);
+    }).catch(()=>{});
+  }
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', ensure); } else { ensure(); }
+})();
+</script>
+
+
+
+<script id="ls-sanitize-old-js">
+(function(){
+  // Remove apenas ids legados conhecidos, preservando #lsModal e #lsPanel
+  const LEGACY = [
+    'modalLS','localStorageModal','lsWindow','lsPopup','modal-localstorage',
+    'local-storage-modal','ls-modal-old','oldLsModal','modalLocalStorage','modal-ls'
+  ];
+  function clean(){
+    try{
+      LEGACY.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.remove();
+      });
+      // Opcional: fecha modais legados que venham com classes genéricas
+      document.querySelectorAll('.modal,[role="dialog"]').forEach(el=>{
+        if(el.id && (el.id==='lsModal' || el.id==='lsPanel')) return;
+        if(el.closest('#lsModal')) return;
+        if(/localstorage|modal-ls|ls-?old/i.test(el.id||'') || /localstorage/i.test(el.className||'')){
+          el.remove();
+        }
+      });
+    }catch(e){}
+  }
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', clean); } else { clean(); }
+})();
+</script>
+
+
+
+<script id="arch-init-nonatlas">
+(function(){
+  function initArchSelect(){
+    var sel=document.getElementById('arch-select'); if(!sel) return;
+    var saved=(localStorage.getItem('uno:arch')||localStorage.getItem('infodose:arch')||'').replace(/\.html$/i,'');
+    var idx=-1;
+    for(var i=0;i<sel.options.length;i++){
+      var v=sel.options[i].value.replace(/\.html$/i,'');
+      if(saved && v===saved){ idx=i; break; }
+    }
+    sel.selectedIndex = idx; // -1 = nenhum, evita default 'atlas'
+  }
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', initArchSelect); } else { initArchSelect(); }
+})();
+</script>
+
+
+<!-- PATCH: overlay-hardlock -->
+<script id="overlay-hardlock">
+(function () {
+  const LSget = (k,d)=>{ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d }catch(e){ return d } };
+
+  function setOverlayTransparent(){
+    try{
+      document.documentElement.style.setProperty('--arch-overlay','rgba(0,0,0,0)');
+      document.documentElement.style.setProperty('--arch-overlay-strength','0%');
+    }catch(e){}
+  }
+
+  function gateApply(){
+    // Re-define applyArchOverlay ALWAYS last so it cannot be overridden later
+    window.applyArchOverlay = function(name){
+      const on = !!LSget('arch:overlayOn', false);
+      if(!on){ setOverlayTransparent(); return; }
+      const key = (name||'').toLowerCase();
+      const MAP = (window.ARCH_OVERLAYS_PATCHED||window.ARCH_OVERLAYS||{default:'rgba(0,0,0,0)'});
+      const color = MAP[key] || MAP.default || 'rgba(0,0,0,0)';
+      try{
+        document.documentElement.style.setProperty('--arch-overlay', color);
+        // If some panels manage strength separately, leave current value as-is when ON
+      }catch(e){}
+    };
+
+    // On load, keep OFF if toggle is OFF
+    const sel = document.getElementById('arch-select');
+    const base = (sel?.value || '').replace(/\.html$/i,'');
+    if(!LSget('arch:overlayOn', false)) setOverlayTransparent(); else window.applyArchOverlay(base);
+  }
+
+  if(document.readyState === 'complete') gateApply();
+  else window.addEventListener('load', gateApply);
+})();
+</script>
+<!-- PATCH: ls-refresh-binder -->
+<script>
+(function(){
+  function bind(){
+    var b = document.getElementById('lsRefresh');
+    if(b){ b.onclick = function(){ try{ location.reload(); }catch(e){} }; }
+  }
+  if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', bind); } else { bind(); }
+})();
+</script>
+<!-- PATCH: overlay-guardian-js -->
+<script id="overlay-guardian-js">
+(function(){
+  function readLSBool(key, d){ try{ var v = localStorage.getItem(key); return v ? JSON.parse(v) : d; }catch(e){ return d; } }
+  function enforce(){
+    var on = !!readLSBool('arch:overlayOn', false);
+    document.documentElement.setAttribute('data-overlay', on ? 'on' : 'off');
+    if(!on){
+      try{
+        document.documentElement.style.setProperty('--arch-overlay','rgba(0,0,0,0)');
+        document.documentElement.style.setProperty('--arch-overlay-strength','0%');
+        var fade = document.getElementById('arch-fadeCover');
+        if(fade) fade.style.background = 'transparent';
+      }catch(e){}
+    }
+  }
+  function bind(){
+    enforce();
+    // Poll lightly to defeat late writers
+    setInterval(enforce, 500);
+    // Also react to storage changes (other tabs)
+    window.addEventListener('storage', function(ev){ if(ev && ev.key==='arch:overlayOn'){ enforce(); } });
+    // If there is a Brain toggle, hook it
+    document.addEventListener('click', function(e){
+      var t = e.target;
+      if(!t) return;
+      if(t.id==='overlayToggle' || t.closest && t.closest('#overlayToggle')){
+        setTimeout(enforce, 60);
+      }
+    }, true);
+  }
+  if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', bind); } else { bind(); }
+})();
+</script>
+<script type="module" src="./lib/UNO_patch_arch3d_bloom_loader.js"></script>
+<script src="./lib/UNO_patch_arch3d_particles.js"></script>
+<script src="./lib/dual_multiagent_v12_kobllux_locked.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  addEventListener('load', ()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
+</script>
+
+<script>
+/* ==========================================================================
+   ORB WebGL (shader nebula) + Partículas 2D — escopo HUB
+   ========================================================================== */
+(function(){
+  const canvas = document.getElementById('orb');
+  if(!canvas) return;
+  const gl = canvas.getContext('webgl', { antialias:true, alpha:true });
+  if(!gl) return;
+
+  const dpr = Math.min(2, window.devicePixelRatio||1);
+  function resize(){
+    const r = canvas.getBoundingClientRect();
+    canvas.width = Math.floor(r.width*dpr);
+    canvas.height = Math.floor(r.height*dpr);
+    gl.viewport(0,0,canvas.width,canvas.height);
+  }
+  new ResizeObserver(resize).observe(canvas); resize();
+
+  const vs = 'attribute vec2 aPos; varying vec2 vUv; void main(){ vUv=aPos*0.5+0.5; gl_Position=vec4(aPos,0.,1.);}';
+  const fs = `precision highp float; varying vec2 vUv; uniform vec2 u_res; uniform float u_time; uniform float u_active;
+  float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453123); }
+  float noise(vec2 p){ vec2 i=floor(p); vec2 f=fract(p); float a=hash(i);
+    float b=hash(i+vec2(1.,0.)); float c=hash(i+vec2(0.,1.)); float d=hash(i+vec2(1.,1.));
+    vec2 u=f*f*(3.-2.*f); return mix(a,b,u.x)+(c-a)*u.y*(1.-u.x)+(d-b)*u.x*u.y; }
+  vec3 cam(){ return vec3(0.,0.,3.); }
+  vec3 getRay(vec2 uv){ uv=(uv*2.-1.); uv.x*=u_res.x/u_res.y; return normalize(vec3(uv,-1.8)); }
+  bool isph(vec3 ro, vec3 rd, float r, out float t){
+    float b=dot(ro,rd); float c=dot(ro,ro)-r*r; float h=b*b-c; if(h<0.){t=-1.;return false;}
+    h=sqrt(h); t=-b-h; if(t<0.) t=-b+h; if(t<0.) return false; return true; }
+  void main(){
+    vec2 uv=vUv; vec3 ro=cam(); vec3 rd=getRay(uv);
+    float t; vec3 col=vec3(0.02,0.03,0.07); vec3 fogCol=vec3(0.07,0.09,0.16);
+    float g=noise(uv*6.+u_time*0.05)*0.25; col+=vec3(0.25,0.08,0.55)*g*0.6+vec3(0.0,0.35,0.55)*g*0.4;
+    if(isph(ro,rd,1.,t)){
+      vec3 p=ro+rd*t; vec3 n=normalize(p);
+      float bands=0.5+0.5*sin(6.*p.x+5.*p.y+u_time*0.6);
+      float swirl=noise(p.xy*4.+u_time*0.2);
+      vec3 A=vec3(0.52,0.24,1.00), B=vec3(0.00,0.90,1.00);
+      vec3 base=mix(A,B, clamp(bands*0.6+swirl*0.4,0.,1.));
+      vec3 L=normalize(vec3(0.6,0.7,0.5));
+      float diff=max(dot(n,L),0.); float rim=pow(1.-max(dot(n,-rd),0.), 2.);
+      float pulse=0.5+0.5*sin(u_time*1.5); float act=mix(0.6,1.0,u_active);
+      vec3 c=base*(0.35+0.75*diff*act)+(B*0.6+A*0.4)*rim*(0.6+0.4*pulse);
+      float fogAmt=1.0-exp(-t*0.35); col=mix(c,fogCol,fogAmt*0.25);
+    }else{
+      vec2 centered=uv-0.5; centered.x*=u_res.x/u_res.y;
+      float d=length(centered); float outer=smoothstep(0.58,0.12,d);
+      vec3 halo=vec3(0.25,0.12,0.55)*outer*0.35+vec3(0.00,0.55,0.95)*outer*0.25;
+      col+=halo;
+    }
+    float vign=smoothstep(1.2,0.55, length((uv-0.5)*vec2(u_res.x/u_res.y,1.)));
+    col*=vign; gl_FragColor=vec4(col,0.98);
+  }`;
+  function sh(type,src){ const s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s); return s; }
+  const pr=gl.createProgram(); gl.attachShader(pr,sh(gl.VERTEX_SHADER,vs)); gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,fs)); gl.linkProgram(pr); gl.useProgram(pr);
+  const buf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,buf); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1, 1,-1,1,1,-1,1]),gl.STATIC_DRAW);
+  const loc=gl.getAttribLocation(pr,'aPos'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+  const uRes=gl.getUniformLocation(pr,'u_res'); const uTime=gl.getUniformLocation(pr,'u_time'); const uActive=gl.getUniformLocation(pr,'u_active');
+  let start=performance.now(), active=0.0;
+  function draw(){ const t=(performance.now()-start)*0.001; gl.uniform2f(uRes,canvas.width,canvas.height); gl.uniform1f(uTime,t); gl.uniform1f(uActive,active); gl.drawArrays(gl.TRIANGLES,0,6); requestAnimationFrame(draw) }
+  draw();
+  window.__orbGL__ = {
+    setActive:(v)=>{ active=v?1.0:0.0; },
+    pulse:()=>{ let k=0,steps=24; const id=setInterval(()=>{ active=Math.min(1,active+0.06); if(++k>=steps) clearInterval(id);},16);
+                setTimeout(()=>{ let j=0; const id2=setInterval(()=>{ active=Math.max(0,active-0.06); if(++j>=steps) clearInterval(id2);},16);},380); }
+  };
+})();
+
+(function particles2D(){
+  const c=document.getElementById('particles'); if(!c) return;
+  const ctx=c.getContext('2d'); const dpr=Math.min(2,window.devicePixelRatio||1);
+  function rs(){ const r=c.getBoundingClientRect(); c.width=Math.floor(r.width*dpr); c.height=Math.floor(r.height*dpr); }
+  new ResizeObserver(rs).observe(c); rs();
+  const N=90, nodes=Array.from({length:N},()=>({a:Math.random()*6.283, r:0.42+Math.random()*0.48, s:(0.2+Math.random()*0.7)*(Math.random()<0.5?-1:1), z:0.5+Math.random()*0.5, hue:200+Math.random()*160}));
+  function draw(t){ ctx.clearRect(0,0,c.width,c.height); ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.translate(c.width/2,c.height/2); const scale=Math.min(c.width,c.height)/2;
+    for(const n of nodes){
+      const a=n.a + t*0.00025*n.s, r=n.r + 0.03*Math.sin(t*0.0005+n.a);
+      const x=Math.cos(a)*r*scale, y=Math.sin(a)*r*scale;
+      const g=ctx.createRadialGradient(x,y,0, x,y, 6 + n.z*8);
+      g.addColorStop(0, `hsla(${n.hue}, 85%, 65%, ${0.38*n.z})`);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y, 2.5 + n.z*3.0, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.restore(); requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
+
+// Pulsar no clique direto no wrap
+document.getElementById('orbWrap')?.addEventListener('click', function(){ try{ window.__orbGL__ && window.__orbGL__.pulse(); }catch(_){ } });
+</script>
+
+
+<script id="orb-slot-and-archpersist-patch">
+(function(){
+  // ---- Helpers ----
+  function $(q, r=document){ return r.querySelector(q); }
+  function baseName(file){ return String(file||'').replace(/\.html$/i,'').toLowerCase(); }
+
+  // ---- Create orb-slot and move the iframe inside the orb ----
+  function fuseIframeIntoOrb(){
+    var wrap = $('#orbWrap');
+    var frame = $('#arch-frame');
+    if(!wrap || !frame) return;
+    // If already fused, skip
+    if (frame.parentElement && frame.parentElement.classList && frame.parentElement.classList.contains('orb-slot')) return;
+    var slot = document.createElement('div');
+    slot.className = 'orb-slot';
+    // Insert slot above particles but below ring (order controlled by CSS z-index)
+    wrap.appendChild(slot);
+    // Move iframe inside slot
+    slot.appendChild(frame);
+  }
+
+  // ---- Archetype persistence (uno:arch) + overlay/apply + Firestore sync ----
+  function currentSelectBase(){
+    var sel = $('#arch-select'); if(!sel) return '';
+    var opt = sel.options[sel.selectedIndex];
+    return baseName(opt && opt.value);
+  }
+  function applyArch(base){
+    var sel = $('#arch-select'), frame = $('#arch-frame'), fade = $('#arch-fadeCover');
+    if(!sel || !frame) return;
+    var idx = -1;
+    for (var i=0;i<sel.options.length;i++){
+      if (baseName(sel.options[i].value) === base){ idx = i; break; }
+    }
+    if (idx >= 0){
+      sel.selectedIndex = idx;
+      if (fade) fade.classList.add('show');
+      var file = sel.options[idx].value;
+      frame.src = './archetypes/' + file;
+      try { if (typeof window.applyArchOverlay === 'function') window.applyArchOverlay(base); } catch(_){}
+      try { if (typeof window.speakArchetype === 'function') window.speakArchetype(base); } catch(_){}
+      try { if (typeof window.updateHomeStatus === 'function') window.updateHomeStatus(); } catch(_){}
+      setTimeout(function(){ if (fade) fade.classList.remove('show'); }, 240);
+    }
+  }
+  function saveArch(base){
+    if(!base) return;
+    try { localStorage.setItem('uno:arch', base); } catch(_){}
+    // If a shared app state exists, mirror and save remotely
+    try {
+      if (window.S && S.state){
+        S.state.archetype = base;
+        if (typeof window.saveState === 'function') saveState(S.state);
+      }
+    } catch(_){}
+  }
+  function bindArchPersistence(){
+    var sel = $('#arch-select'), prev = $('#arch-prev'), next = $('#arch-next');
+    function persist(){ var b=currentSelectBase(); if(b){ saveArch(b);} }
+    if (sel) sel.addEventListener('change', persist, {passive:true});
+    if (prev) prev.addEventListener('click', function(){ setTimeout(persist, 0); }, {passive:true});
+    if (next) next.addEventListener('click', function(){ setTimeout(persist, 0); }, {passive:true});
+    // Accept remote notifications
+    window.addEventListener('message', function(ev){
+      var d = ev && ev.data || {};
+      if (d && d.type==='archReady' && d.name){
+        var b = baseName(d.name);
+        saveArch(b);
+      }
+    });
+  }
+  function bootWithSavedArch(){
+    var saved = (localStorage.getItem('uno:arch') || localStorage.getItem('infodose:arch') || '').replace(/\.html$/i,'');
+    saved = baseName(saved);
+    if(saved){
+      var cur = currentSelectBase();
+      if (cur !== saved) applyArch(saved);
+    } else {
+      // Initialize with current
+      saveArch(currentSelectBase());
+    }
+  }
+
+  function start(){
+    fuseIframeIntoOrb();
+    bindArchPersistence();
+    bootWithSavedArch();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
 })();
 </script>
 
